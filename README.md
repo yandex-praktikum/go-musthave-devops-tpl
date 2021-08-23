@@ -1,6 +1,6 @@
 # go-musthave-devops-tpl
 
-Шаблон репозитория для практического трек "Go и DevOps"
+Шаблон репозитория для практического трека "Go в DevOps"
 
 # Начало работы
 
@@ -9,7 +9,7 @@
 
 # Обновление шаблона
 
-Чтобы иметь возможность получать обновления автотестов и других частей шаблона выполните следующую команды:
+Чтобы получать обновления автотестов и других частей шаблона, выполните следующие команды:
 
 ```
 git remote add -m main template https://github.com/yandex-praktikum/go-musthave-devops-tpl.git
@@ -21,4 +21,4 @@ git remote add -m main template https://github.com/yandex-praktikum/go-musthave-
 git fetch template && git checkout template/main .github
 ```
 
-затем добавьте полученые изменения в свой репозиторий.
+Затем добавьте полученные изменения в свой репозиторий.
