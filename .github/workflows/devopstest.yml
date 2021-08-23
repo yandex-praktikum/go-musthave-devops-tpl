@@ -1,0 +1,113 @@
+name: autotests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  devopstest:
+    runs-on: ubuntu-latest
+    container: golang:1.16
+    steps:
+    - name: Install deps
+      run: |
+        apt-get update && apt-get install -y --no-install-recommends lsof psmisc
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Download devopstest binary
+      uses: robinraju/release-downloader@v1
+      with:
+        repository: Yandex-Practicum/go-autotests-bin
+        latest: true
+        fileName: devopstest
+        out-file-path: .tools
+
+    - name: Setup autotest binary
+      run: |
+        chmod -R +x $GITHUB_WORKSPACE/.tools/devopstest
+        mv $GITHUB_WORKSPACE/.tools/devopstest /usr/local/bin/devopstest
+
+    - name: "[Code increment #1] Start monitor (and work at least 10s)"
+      if: always()
+      run: |
+        sh -c 'eval "timeout 10 go run ./cmd/monitor/..."; if [ $? -eq 124 ]; then exit 0; else exit 100; fi'
+
+    - name: "[Code increment #2] Start monitor (can receive data via 8080)"
+      if: always()
+      run: |
+        go run ./cmd/monitor/... &
+        timeout 10 nc -l 8080
+
+    - name: "[Code increment #2] Start server (and listen 8080)"
+      if: always()
+      run: |
+        go run ./cmd/server/... &
+        timeout 10 sh -c 'until lsof -i:8080; do sleep 1s; done'
+
+    - name: "[Code increment #2] Post"
+      if: always()
+      run: |
+        devopstest -test.v -test.run=^TestPostHandlers$ ./...
+
+    - name: "[Code increment #2] Get"
+      if: always()
+      run: |
+        devopstest -test.v -test.run=^TestGetHandlers$ ./...
+
+    - name: "[Code increment #3] Check HTTP framework usage"
+      if: always()
+      run: |
+        devopstest -test.v -test.run=^TestUsesHTTPFramework$ ./...
+
+    - name: "[Code increment #3] Post ver2"
+      if: always()
+      run: |
+        devopstest -test.v -test.run=^TestPostHandlers2$ ./...
+
+    - name: "[Code increment #3] update/get metric"
+      if: always()
+      run: |
+        devopstest -test.v -test.run=^TestSetGetMetrics$ ./...
+
+    - name: "[Code increment #3] Monitoring data"
+      if: always()
+      run: |
+        devopstest -test.v -test.run=^TestMonitoringData$ ./...
+
+    # - name: "[Code increment #4] Encoding"
+
+    # - name: "[Code increment #5] Start web server with custom settings"
+    #   if: always()
+    #   run: |
+    #     APP_PORT=9080
+    #     APP_BASE_HOST=$(tr -dc a-z < /dev/urandom | head -c 12 ; echo '.local')
+    #     APP_BASE_URL=http://$APP_BASE_HOST
+    #     echo "APP_PORT=$APP_PORT" >> $GITHUB_ENV
+    #     echo "APP_BASE_HOST=$APP_BASE_HOST" >> $GITHUB_ENV
+    #     echo "APP_BASE_URL=$APP_BASE_URL" >> $GITHUB_ENV
+    #     echo "127.0.0.1 $APP_BASE_HOST" >> /etc/hosts
+    #     RUN_ADDRESS=localhost:$APP_PORT BASE_URL=$APP_BASE_URL go run ./cmd/devops/... &
+    #     timeout 10 sh -c "until lsof -i:$APP_PORT; do sleep 1s; done"
+
+    # - name: "[Code increment #5] Check env vars usage"
+    #   if: always()
+    #   run: |
+    #     TARGET_HTTP_ADDRESS=$APP_BASE_URL:$APP_PORT devopstest -test.v -test.run=^TestBasicHandlers\|TestAPIHandler$ ./...
+
+    # - name: "[Code increment #6] Check persistent file usage"
+    #   if: always()
+    #   run: |
+    #     devopstest -test.v -test.run=^TestGobFile$ ./...
+
+    # - name: "[Code increment #6] update/get with server restart"
+    #   run: |
+    #     devopstest -test.v -test.run=^TestSetGetMetricsWithRestartBefore$ ./...
+    #     killall server
+    #     go run ./cmd/server/... &
+    #     timeout 10 sh -c 'until lsof -i:8080; do sleep 1s; done'
+    #     devopstest -test.v -test.run=^TestSetGetMetricsWithRestartAfter$ ./...
