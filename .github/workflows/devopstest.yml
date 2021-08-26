@@ -32,15 +32,15 @@ jobs:
         chmod -R +x $GITHUB_WORKSPACE/.tools/devopstest
         mv $GITHUB_WORKSPACE/.tools/devopstest /usr/local/bin/devopstest
 
-    - name: "[Code increment #1] Start monitor (and work at least 10s)"
+    - name: "[Code increment #1] Start agent (and work at least 10s)"
       if: always()
       run: |
-        sh -c 'eval "timeout 10 go run ./cmd/monitor/..."; if [ $? -eq 124 ]; then exit 0; else exit 100; fi'
+        sh -c 'eval "timeout 10 go run ./cmd/agent/..."; if [ $? -eq 124 ]; then exit 0; else exit 100; fi'
 
-    - name: "[Code increment #2] Start monitor (can receive data via 8080)"
+    - name: "[Code increment #2] Start agent (can receive data via 8080)"
       if: always()
       run: |
-        go run ./cmd/monitor/... &
+        go run ./cmd/agent/... &
         timeout 10 nc -l 8080
 
     - name: "[Code increment #2] Start server (and listen 8080)"
