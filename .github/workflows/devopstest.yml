@@ -70,7 +70,7 @@ jobs:
       run: |
         devopstest -test.v -test.run=^TestPostHandlers2$ ./...
 
-    - name: "[Code increment #3] update/get metric"
+    - name: "[Code increment #3] Update/Get metric"
       if: always()
       run: |
         devopstest -test.v -test.run=^TestSetGetMetrics$ ./...
@@ -80,7 +80,26 @@ jobs:
       run: |
         devopstest -test.v -test.run=^TestMonitoringData$ ./...
 
-    # - name: "[Code increment #4] Encoding"
+    # - name: "[Code increment #4] Check JSON API handler"
+    #   if: always()
+    #   run: |
+    #     devopstest -test.v -test.run=^TestAPIHandler\|TestUsesJSONEncoder$ ./...
+
+    - name: "[Code increment #4] Json Post"
+      if: always()
+      run: |
+        devopstest -test.v -test.run=^TestJsonPostHandlers$ ./...
+
+    - name: "[Code increment #4] Json Update/Get metric"
+      if: always()
+      run: |
+        devopstest -test.v -test.run=^TestJsonSetGetMetrics$ ./...
+
+    - name: "[Code increment #4] Json Monitoring data"
+      if: always()
+      run: |
+        devopstest -test.v -test.run=^TestJsonMonitoringData$ ./...
+
 
     # - name: "[Code increment #5] Start web server with custom settings"
     #   if: always()
