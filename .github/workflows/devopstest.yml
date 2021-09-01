@@ -29,7 +29,6 @@ jobs:
 
     - name: Setup autotest binary
       run: |
-        mkdir -p $GITHUB_WORKSPACE/.tools/devopstest
         chmod -R +x $GITHUB_WORKSPACE/.tools/devopstest
         mv $GITHUB_WORKSPACE/.tools/devopstest /usr/local/bin/devopstest
 
