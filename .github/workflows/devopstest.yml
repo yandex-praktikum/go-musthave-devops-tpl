@@ -69,7 +69,7 @@ jobs:
     - name: "[Code increment #3] Monitoring data"
       if: always()
       run: |
-        devopstest -test.v -test.run=^TestMonitoringData$ ./...
+        timeout 60 devopstest -test.v -test.run=^TestMonitoringData$ ./...
 
     # - name: "[Code increment #4] Check JSON API handler"
     #   if: always()
