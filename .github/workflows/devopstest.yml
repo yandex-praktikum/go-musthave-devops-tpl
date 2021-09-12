@@ -19,18 +19,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Download devopstest binary
-      uses: robinraju/release-downloader@v1
-      with:
-        repository: Yandex-Practicum/go-autotests-bin
-        latest: true
-        fileName: devopstest
-        out-file-path: .tools
-
-    - name: Setup autotest binary
+    - name: Download and setup autotest binary
       run: |
-        chmod -R +x $GITHUB_WORKSPACE/.tools/devopstest
-        mv $GITHUB_WORKSPACE/.tools/devopstest /usr/local/bin/devopstest
+        wget https://github.com/Yandex-Practicum/go-autotests-bin/raw/main/.tools/devopstest -O /usr/local/bin/devopstest
+        chmod +x /usr/local/bin/devopstest
 
     - name: "[Code increment #1] Start agent (and work at least 10s)"
       if: always()
