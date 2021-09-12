@@ -33,7 +33,7 @@ jobs:
       if: always()
       run: |
         go run ./cmd/agent/main.go &
-        timeout 10 nc -l 8080
+        timeout 10 echo "" | nc -l 8080
 
     - name: "[Code increment #2] Start server (and listen 8080)"
       if: always()
