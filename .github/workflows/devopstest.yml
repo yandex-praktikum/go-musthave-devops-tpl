@@ -10,115 +10,275 @@ jobs:
 
   devopstest:
     runs-on: ubuntu-latest
-    container: golang:1.16
+    container: golang:1.17
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: praktikum
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-    - name: Install deps
-      run: |
-        apt-get update && apt-get install -y --no-install-recommends lsof psmisc netcat
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Download autotests binaries
+        uses: robinraju/release-downloader@v1.2
+        with:
+          repository: Yandex-Practicum/go-autotests-bin
+          latest: true
+          fileName: "*"
+          out-file-path: .tools
 
-    - name: Download and setup autotest binary
-      run: |
-        wget https://github.com/Yandex-Practicum/go-autotests-bin/raw/main/.tools/devopstest -O /usr/local/bin/devopstest
-        chmod +x /usr/local/bin/devopstest
+      - name: Setup autotest binary
+        run: |
+          chmod -R +x $GITHUB_WORKSPACE/.tools
+          mv $GITHUB_WORKSPACE/.tools/devopstest /usr/local/bin/devopstest
+          mv $GITHUB_WORKSPACE/.tools/random /usr/local/bin/random
 
-    - name: "[Code increment #1] Start agent (and work at least 10s)"
-      if: always()
-      run: |
-        sh -c 'eval "timeout 10 go run ./cmd/agent/main.go"; if [ $? -eq 124 ]; then exit 0; else exit 100; fi'
+      - name: Build agent binary
+        run: |
+          cd cmd/agent
+          go build -o agent
 
-    - name: "[Code increment #2] Start agent (can receive data via 8080)"
-      if: always()
-      run: |
-        go run ./cmd/agent/main.go &
-        timeout 10 echo "" | nc -l 8080
+# Соглашение:
+#   Во всех заданиях, стоит обрабатывать все пограничные случаи и негатив-кейсы.
+#   По ходу продвижения по инкрементам, тесты становятся строже.
+#   Кроме того, темплейты могут обновляться, добавляя все более строгие проверки.
 
-    - name: "[Code increment #2] Start server (and listen 8080)"
-      if: always()
-      run: |
-        go run ./cmd/server/main.go &
-        timeout 10 sh -c 'until lsof -i:8080; do sleep 1s; done'
+# I. Задание к первому инкременту.
+# Разработать агент по сборку рантайм метрик и их последующей отправке на сервер по протоколу http.
+# Тут и далее разработку необходимо вести с использованием шаблона https://github.com/yandex-praktikum/go-musthave-devops-tpl.git
+# Основные требования к приложению:
+# Агент должен собирать метрики двух типов:
+#   * gauge, тип float64
+#   * counter, тип int64
+# В качестве источника метрик использовать пакет runtime, необходимо собирать следующие метрики:
+#   * Имя метрики: "Alloc", тип: gauge
+#   * Имя метрики: "BuckHashSys", тип: gauge
+#   * Имя метрики: "Frees", тип: gauge
+#   * Имя метрики: "GCCPUFraction", тип: gauge
+#   * Имя метрики: "GCSys", тип: gauge
+#   * Имя метрики: "HeapAlloc", тип: gauge
+#   * Имя метрики: "HeapIdle", тип: gauge
+#   * Имя метрики: "HeapInuse", тип: gauge
+#   * Имя метрики: "HeapObjects", тип: gauge
+#   * Имя метрики: "HeapReleased", тип: gauge
+#   * Имя метрики: "HeapSys", тип: gauge
+#   * Имя метрики: "LastGC", тип: gauge
+#   * Имя метрики: "Lookups", тип: gauge
+#   * Имя метрики: "MCacheInuse", тип: gauge
+#   * Имя метрики: "MCacheSys", тип: gauge
+#   * Имя метрики: "MSpanInuse", тип: gauge
+#   * Имя метрики: "MSpanSys", тип: gauge
+#   * Имя метрики: "Mallocs", тип: gauge
+#   * Имя метрики: "NextGC", тип: gauge
+#   * Имя метрики: "NumForcedGC", тип: gauge
+#   * Имя метрики: "NumGC", тип: gauge
+#   * Имя метрики: "OtherSys", тип: gauge
+#   * Имя метрики: "PauseTotalNs", тип: gauge
+#   * Имя метрики: "StackInuse", тип: gauge
+#   * Имя метрики: "StackSys", тип: gauge
+#   * Имя метрики: "Sys", тип: gauge
+# К метрикам пакета runtime, так же добавить следуюище метрики:
+#   * Имя метрики: "PollCount", тип: counter - счетчик, увеличивающийся на 1, при кажом обновлении метрики из пакета runtime (на каждый pollInterval - см. ниже)
+#   * Имя метрики: "RandomValue", тип: gauge - обновляемое рандомное значение
+# По умолчанию, приложение должно обновлять метрики из пакета runtime с заданной частотой:
+#   pollInterval: 2 секунды
+# По умолчанию, приложение должно отправлять метрики на сервер с заданной частотой:
+#   reportInterval: 10 секунд
+# Метрики должны отправляться по протоколу http, методом POST:
+#   * по умолчанию на адрес: 127.0.0.1, порт: 8080
+#   * в формате: "http://<АДРЕС_СЕРВЕРА>/update/<ТИП_МЕТРИКИ>/<ИМЯ_МЕТРИКИ>/<ЗНАЧЕНИЕ_МЕТРИКИ>"
+#   * application-type: "text/plain"
+# Агент должен уметь штатно завершаться по сигналам: syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT
 
-    - name: "[Code increment #2] Post"
-      if: always()
-      run: |
-        devopstest -test.v -test.run=^TestPostHandlers$ ./...
+      - name: "Code increment #1"
+        if: always()
+        run: |
+          devopstest -test.v -test.run=^TestIteration1$ \
+            -agent-binary-path=cmd/agent/agent
 
-    - name: "[Code increment #2] Get"
-      if: always()
-      run: |
-        devopstest -test.v -test.run=^TestGetHandlers$ ./...
+      - name: Build server binary
+        run: |
+          cd cmd/server
+          go build -o server
 
-    - name: "[Code increment #3] Check HTTP framework usage"
-      if: always()
-      run: |
-        devopstest -test.v -test.run=^TestUsesHTTPFramework$ ./...
+# II. Задание ко второму инкременту.
+# Разработать сервер по сбору рантайм метрик, который собирает репорты от агентов по протоколу http.
+# Тут и далее разработку следует продолжать в ранее используемом репозитории (с предыдущими инкрементами), однако сервер стоит размещать по своему пути: cmd/server/
+# Основные требования к приложению:
+# Сервер должен собирать и хранить произвольные метрики двух типов:
+#   * gauge, тип float64, новое значение должно замещать предыдущее.
+#   * counter, тип int64, новое значение должено добавляться к предыдущему (если оно ранее уже было известно серверу).
+# Метрики должны приниматься по протоколу http, методом POST:
+#   * по умолчанию открывать порт: 8080, на адресе: 127.0.0.1
+#   * в формате: "http://<АДРЕС_СЕРВЕРА>/update/<ТИП_МЕТРИКИ>/<ИМЯ_МЕТРИКИ>/<ЗНАЧЕНИЕ_МЕТРИКИ>"
+#   * application-type: "text/plain"
+#   * при успешном приеме, возвращать статус: http.StatusOK
+# Сервер должен уметь штатно завершаться по сигналам: syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT
+# Необходимо покрыть код агента и сервера юнит тестами
 
-    - name: "[Code increment #3] Post ver2"
-      if: always()
-      run: |
-        devopstest -test.v -test.run=^TestPostHandlers2$ ./...
+      - name: "Code increment #2"
+        if: always()
+        run: |
+          devopstest -test.v -test.run=^TestIteration2[b]*$ \
+            -source-path=.
+            -binary-path=cmd/server/server \
 
-    - name: "[Code increment #3] Update/Get metric"
-      if: always()
-      run: |
-        devopstest -test.v -test.run=^TestSetGetMetrics$ ./...
+# III. Задание к третьему инкременту.
+# Переписать код с использованием одного из распространенных web-фреймворков. Например: github.com/go-chi/chi
+# По запросу GET http://<АДРЕС_СЕРВЕРА>/value/<ТИП_МЕТРИКИ>/<ИМЯ_МЕТРИКИ>, сервер должен возвращать текущее значение запрашиваемой метрики в текстовом виде. Со статусом http.StatusOK
+# При попытке запроса неизвестной серверу метрики, сервер должен возвращать http.StatusNotFound
+# По запросу GET http://<АДРЕС_СЕРВЕРА>/, сервер должен отдавать html-страничку, со списком имен и значений всех известных ему на текущий момент метрик.
 
-    - name: "[Code increment #3] Monitoring data"
-      if: always()
-      run: |
-        timeout 60 devopstest -test.v -test.run=^TestMonitoringData$ ./...
+      - name: "Code increment #3"
+        if: always()
+        run: |
+          devopstest -test.v -test.run=^TestIteration3[b]*$
+            -source-path=.
+            -binary-path=cmd/server/server \
 
-    # - name: "[Code increment #4] Check JSON API handler"
-    #   if: always()
-    #   run: |
-    #     devopstest -test.v -test.run=^TestAPIHandler\|TestUsesJSONEncoder$ ./...
+# IV. Задание к четвертому инкременту.
+# На сервере дополнить(!) API, позволяющее принимать метрики в формате JSON. При реализации стоит задействовать одну из распространнеых библиотек. Например: encoding/json
+#   * Обмен с сервером организовать с использованием следующей структуры:
+#   type Metrics struct {
+# 	    ID    string   `json:"id"`              // Имя метрики
+# 	    MType string   `json:"type"`            // Параметр принимающий значение gauge или counter
+# 	    Delta *int64   `json:"delta,omitempty"` // Значение метрики в случае передачи counter
+# 	    Value *float64 `json:"value,omitempty"` // Значение метрики в случае передачи gauge
+#   }
+#   * Для передачи на метрик сервер использовать Content-Type: "application/json",
+#     в теле запроса описанный выше JSON, передача через: POST update/
+#   * Для получения метрик с сервера использовать Content-Type: "application/json",
+#     в теле запроса описанный выше JSON (заполняем только ID и MType),
+#     в ответ получаем такой же JSON, но уже с заполненными значениями метрик. Запрос через: POST value/
+# Перевести агента на новое API
+# Тесты проверяют, что агент экспортирует и обновляет метрики на серере, описанные в первом инкременте.
 
-    - name: "[Code increment #4] Json Post"
-      if: always()
-      run: |
-        devopstest -test.v -test.run=^TestJsonPostHandlers$ ./...
+      - name: "Code increment #4"
+        if: always()
+        run: |
+          devopstest -test.v -test.run=^TestIteration4$ \
+            -source-path=. \
+            -binary-path=cmd/server/server \
+            -agent-binary-path=cmd/agent/agent
 
-    - name: "[Code increment #4] Json Update/Get metric"
-      if: always()
-      run: |
-        devopstest -test.v -test.run=^TestJsonSetGetMetrics$ ./...
+# V. Задание к пятому инкременту.
+# Доработать агента таким образом, что бы он мог изменять свои параметры запуска по умолчанию, через переменные окружения:
+#   ADDRESS (по умолчанию: "127.0.0.1:8080" или "localhost:8080")
+#   REPORT_INTERVAL (по умолчанию: 10 секунд)
+#   POLL_INTERVAL (по умолчанию: 2 секунды)
+# Значения интервалов времени должно задаваться в секундах.
+# Доработать сервер таким образом, что бы он мог изменять свои параметры запуска по умолчанию, через переменные окружения:
+#   ADDRESS (по умолчанию: "127.0.0.1:8080" или "localhost:8080")
 
-    - name: "[Code increment #4] Json Monitoring data"
-      if: always()
-      run: |
-        devopstest -test.v -test.run=^TestJsonMonitoringData$ ./...
+      - name: "Code increment #5"
+        if: always()
+        run: |
+          SERVER_PORT=$(random unused-port)
+          ADDRESS="localhost:${SERVER_PORT}"
+          devopstest -test.v -test.run=^TestIteration5$ \
+              -agent-binary-path=cmd/agent/agent \
+              -binary-path=cmd/server/server \
+              -server-port=$SERVER_PORT
+
+# VI. Задание к пятому инкременту.
+# Необходимо доработать сервер таким образом, что бы он с заданной переодичностью сохранял текущие значения метрик на диск в указанный файл.
+# А на старте опционально мог загружать сохраненные ранее значения.
+# При штатном завершении сервера, все накопленные данные должны сохраняться.
+# Доработать сервер таким образом, что бы он мог принимать конфигурацию, через переменные окружения (ниже так же указаны их значения по умолчанию):
+#   STORE_INTERVAL=300 - интервал времени в секундах, по истечении которого текущие показания сервера сбрасываются на диск. (значение 0 - делает запись синхронной)
+#   STORE_FILE="/tmp/devops-metrics-db.json" - строка - имя файла, где хранятся значения (пустое значение - отключает функцию записи на диск)
+#   RESTORE=true - булево значение (true|false), определяющеезагружать или нет начальные значения из указанного файла при старте сервера.
+
+      - name: "Code increment #6"
+        if: always()
+        run: |
+          SERVER_PORT=$(random unused-port)
+          ADDRESS="localhost:${SERVER_PORT}"
+          TEMP_FILE=$(random tempfile)
+          devopstest -test.v -test.run=^TestIteration6$ \
+              -agent-binary-path=cmd/agent/agent \
+              -binary-path=cmd/server/server \
+              -server-port=$SERVER_PORT \
+              -file-storage-path=$TEMP_FILE
+
+# VII. Задание к cедьмому инкременту.
+# Необходимо доработать код таким образом, что бы он умел принимать аргументы с использованием флагов. Д
+# * Сервер
+#     ADDRESS, через флаг "-a=<ЗНАЧЕНИЕ>"
+#     RESTORE, через флаг "-r=<ЗНАЧЕНИЕ>"
+#     STORE_INTERVAL, через флаг "-i=<ЗНАЧЕНИЕ>"
+#     STORE_FILE, через флаг "-f=<ЗНАЧЕНИЕ>"
+# * Агент
+#    ADDRESS, через флаг: "-a=<ЗНАЧЕНИЕ>"
+#    REPORT_INTERVAL, через флаг: "-r=<ЗНАЧЕНИЕ>"
+#    POLL_INTERVAL, через флаг: "-p=<ЗНАЧЕНИЕ>"
+# Во всех случаях стоит оставить значения по умолчанию, и реализовать приоритет значений полученных через ENV, перед значениями задаваемые посредством флагов.
+
+      - name: "Code increment #7"
+        if: always()
+        run: |
+          SERVER_PORT=$(random unused-port)
+          ADDRESS="localhost:${SERVER_PORT}"
+          TEMP_FILE=$(random tempfile)
+          devopstest -test.v -test.run=^TestIteration7$ \
+              -agent-binary-path=cmd/agent/agent \
+              -binary-path=cmd/server/server \
+              -server-port=$SERVER_PORT \
+              -file-storage-path=$TEMP_FILE
 
 
-    # - name: "[Code increment #5] Start web server with custom settings"
-    #   if: always()
-    #   run: |
-    #     APP_PORT=9080
-    #     APP_BASE_HOST=$(tr -dc a-z < /dev/urandom | head -c 12 ; echo '.local')
-    #     APP_BASE_URL=http://$APP_BASE_HOST
-    #     echo "APP_PORT=$APP_PORT" >> $GITHUB_ENV
-    #     echo "APP_BASE_HOST=$APP_BASE_HOST" >> $GITHUB_ENV
-    #     echo "APP_BASE_URL=$APP_BASE_URL" >> $GITHUB_ENV
-    #     echo "127.0.0.1 $APP_BASE_HOST" >> /etc/hosts
-    #     RUN_ADDRESS=localhost:$APP_PORT BASE_URL=$APP_BASE_URL go run ./cmd/devops/... &
-    #     timeout 10 sh -c "until lsof -i:$APP_PORT; do sleep 1s; done"
 
-    # - name: "[Code increment #5] Check env vars usage"
-    #   if: always()
-    #   run: |
-    #     TARGET_HTTP_ADDRESS=$APP_BASE_URL:$APP_PORT devopstest -test.v -test.run=^TestBasicHandlers\|TestAPIHandler$ ./...
 
-    # - name: "[Code increment #6] Check persistent file usage"
-    #   if: always()
-    #   run: |
-    #     devopstest -test.v -test.run=^TestGobFile$ ./...
+      # - name: "Code increment #8"
+      #   if: always()
+      #   run: |
+      #     devopstest -test.v -test.run=^TestIteration8$ \
+      #         -source-path=. \
+      #         -binary-path=cmd/server/server \
+      #         -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
 
-    # - name: "[Code increment #6] update/get with server restart"
-    #   run: |
-    #     devopstest -test.v -test.run=^TestSetGetMetricsWithRestartBefore$ ./...
-    #     killall server
-    #     go run ./cmd/server/main.go &
-    #     timeout 10 sh -c 'until lsof -i:8080; do sleep 1s; done'
-    #     devopstest -test.v -test.run=^TestSetGetMetricsWithRestartAfter$ ./...
+      # - name: "Code increment #9"
+      #   if: always()
+      #   run: |
+      #     devopstest -test.v -test.run=^TestIteration9$ \
+      #         -source-path=. \
+      #         -binary-path=cmd/server/server \
+      #         -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+
+      # - name: "Code increment #10"
+      #   if: always()
+      #   run: |
+      #     devopstest -test.v -test.run=^TestIteration10$ \
+      #         -source-path=. \
+      #         -binary-path=cmd/server/server \
+      #         -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+
+      # - name: "Code increment #11"
+      #   if: always()
+      #   run: |
+      #     devopstest -test.v -test.run=^TestIteration11$ \
+      #         -binary-path=cmd/server/server \
+      #         -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+
+      # - name: "Code increment #12"
+      #   if: always()
+      #   run: |
+      #     devopstest -test.v -test.run=^TestIteration12$ \
+      #         -binary-path=cmd/server/server \
+      #         -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+
+      # - name: "Code increment #13"
+      #   if: always()
+      #   run: |
+      #     devopstest -test.v -test.run=^TestIteration13$ \
+      #         -binary-path=cmd/server/server \
+      #         -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
