@@ -234,16 +234,20 @@ jobs:
               -server-port=$SERVER_PORT \
               -file-storage-path=$TEMP_FILE
 
+# VII. Задание к восьмому инкременту.
+# Доработать код сервера, для реализации механизма поддержки запросов и формирования ответов со сжатием (gzip)
 
-
-
-      # - name: "Code increment #8"
-      #   if: always()
-      #   run: |
-      #     devopstest -test.v -test.run=^TestIteration8$ \
-      #         -source-path=. \
-      #         -binary-path=cmd/server/server \
-      #         -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+      - name: "Code increment #8"
+        if: always()
+        run: |
+          SERVER_PORT=$(random unused-port)
+          ADDRESS="localhost:${SERVER_PORT}"
+          TEMP_FILE=$(random tempfile)
+          devopstest -test.v -test.run=^TestIteration7$ \
+              -agent-binary-path=cmd/agent/agent \
+              -binary-path=cmd/server/server \
+              -server-port=$SERVER_PORT \
+              -file-storage-path=$TEMP_FILE
 
       # - name: "Code increment #9"
       #   if: always()
