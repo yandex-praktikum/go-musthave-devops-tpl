@@ -234,7 +234,7 @@ jobs:
               -server-port=$SERVER_PORT \
               -file-storage-path=$TEMP_FILE
 
-# VII. Задание к восьмому инкременту.
+# VIII. Задание к восьмому инкременту.
 # Доработать код сервера, для реализации механизма cжатия данных сервером в формате gzip
 # для контента с типом: application/json и text/html
 
@@ -244,13 +244,13 @@ jobs:
           SERVER_PORT=$(random unused-port)
           ADDRESS="localhost:${SERVER_PORT}"
           TEMP_FILE=$(random tempfile)
-          devopstest -test.v -test.run=^TestIteration7$ \
+          devopstest -test.v -test.run=^TestIteration8 \
               -agent-binary-path=cmd/agent/agent \
               -binary-path=cmd/server/server \
               -server-port=$SERVER_PORT \
               -file-storage-path=$TEMP_FILE
 
-# VII. Задание к девятому инкременту.
+# IX. Задание к девятому инкременту.
 # Внимание: это учебный пример, в котором сделан акцент на закреплении пройденной темы,
 # а не на безопасности. В реальной жизни использовать подпись таким образом не следует.
 # Например остается возможность передать серверу перехваченные ранее данные с корректным хешом.
@@ -288,7 +288,7 @@ jobs:
           SERVER_PORT=$(random unused-port)
           ADDRESS="localhost:${SERVER_PORT}"
           TEMP_FILE=$(random tempfile)
-          devopstest -test.v -test.run=^TestIteration7$ \
+          devopstest -test.v -test.run=^TestIteration9$ \
               -agent-binary-path=cmd/agent/agent \
               -binary-path=cmd/server/server \
               -server-port=$SERVER_PORT \
