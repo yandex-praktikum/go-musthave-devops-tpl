@@ -127,8 +127,8 @@ jobs:
         if: always()
         run: |
           devopstest -test.v -test.run=^TestIteration2[b]*$ \
-            -source-path=.
-            -binary-path=cmd/server/server \
+            -source-path=. \
+            -binary-path=cmd/server/server
 
 # III. Задание к третьему инкременту.
 # Переписать код с использованием одного из распространенных web-фреймворков. Например: github.com/go-chi/chi
@@ -139,9 +139,9 @@ jobs:
       - name: "Code increment #3"
         if: always()
         run: |
-          devopstest -test.v -test.run=^TestIteration3[b]*$
-            -source-path=.
-            -binary-path=cmd/server/server \
+          devopstest -test.v -test.run=^TestIteration3[b]*$ \
+            -source-path=. \
+            -binary-path=cmd/server/server
 
 # IV. Задание к четвертому инкременту.
 # Дополнить(!) API сервера, которое позволяет принимать метрики в формате JSON.
