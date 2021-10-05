@@ -184,9 +184,10 @@ jobs:
           SERVER_PORT=$(random unused-port)
           ADDRESS="localhost:${SERVER_PORT}"
           devopstest -test.v -test.run=^TestIteration5$ \
-              -agent-binary-path=cmd/agent/agent \
-              -binary-path=cmd/server/server \
-              -server-port=$SERVER_PORT
+            -source-path=. \
+            -agent-binary-path=cmd/agent/agent \
+            -binary-path=cmd/server/server \
+            -server-port=$SERVER_PORT
 
 # VI. Задание к пятому инкременту.
 # Доработать сервер, что бы он с заданной периодичностью сохранял текущие значения метрик на диск в указанный файл.
@@ -204,10 +205,11 @@ jobs:
           ADDRESS="localhost:${SERVER_PORT}"
           TEMP_FILE=$(random tempfile)
           devopstest -test.v -test.run=^TestIteration6$ \
-              -agent-binary-path=cmd/agent/agent \
-              -binary-path=cmd/server/server \
-              -server-port=$SERVER_PORT \
-              -file-storage-path=$TEMP_FILE
+            -source-path=. \
+            -agent-binary-path=cmd/agent/agent \
+            -binary-path=cmd/server/server \
+            -server-port=$SERVER_PORT \
+            -file-storage-path=$TEMP_FILE
 
 # VII. Задание к седьмому инкременту.
 # Доработать код, что бы он умел принимать аргументы с использованием флагов.
@@ -229,10 +231,11 @@ jobs:
           ADDRESS="localhost:${SERVER_PORT}"
           TEMP_FILE=$(random tempfile)
           devopstest -test.v -test.run=^TestIteration7$ \
-              -agent-binary-path=cmd/agent/agent \
-              -binary-path=cmd/server/server \
-              -server-port=$SERVER_PORT \
-              -file-storage-path=$TEMP_FILE
+            -source-path=. \
+            -agent-binary-path=cmd/agent/agent \
+            -binary-path=cmd/server/server \
+            -server-port=$SERVER_PORT \
+            -file-storage-path=$TEMP_FILE
 
 # VIII. Задание к восьмому инкременту.
 # Доработать код сервера, для реализации механизма cжатия данных сервером в формате gzip
@@ -245,10 +248,11 @@ jobs:
           ADDRESS="localhost:${SERVER_PORT}"
           TEMP_FILE=$(random tempfile)
           devopstest -test.v -test.run=^TestIteration8 \
-              -agent-binary-path=cmd/agent/agent \
-              -binary-path=cmd/server/server \
-              -server-port=$SERVER_PORT \
-              -file-storage-path=$TEMP_FILE
+            -source-path=. \
+            -agent-binary-path=cmd/agent/agent \
+            -binary-path=cmd/server/server \
+            -server-port=$SERVER_PORT \
+            -file-storage-path=$TEMP_FILE
 
 # IX. Задание к девятому инкременту.
 # Внимание: это учебный пример, в котором сделан акцент на закреплении пройденной темы,
@@ -289,11 +293,12 @@ jobs:
           ADDRESS="localhost:${SERVER_PORT}"
           TEMP_FILE=$(random tempfile)
           devopstest -test.v -test.run=^TestIteration9$ \
-              -agent-binary-path=cmd/agent/agent \
-              -binary-path=cmd/server/server \
-              -server-port=$SERVER_PORT \
-              -file-storage-path=$TEMP_FILE \
-              -key="${TEMP_FILE}"
+            -source-path=. \
+            -agent-binary-path=cmd/agent/agent \
+            -binary-path=cmd/server/server \
+            -server-port=$SERVER_PORT \
+            -file-storage-path=$TEMP_FILE \
+            -key="${TEMP_FILE}"
 
       # - name: "Code increment #9"
       #   if: always()
