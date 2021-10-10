@@ -210,6 +210,7 @@ jobs:
             -agent-binary-path=cmd/agent/agent \
             -binary-path=cmd/server/server \
             -server-port=$SERVER_PORT \
+            -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable' \
             -file-storage-path=$TEMP_FILE
 
 # VII. Задание к седьмому инкременту.
@@ -236,6 +237,7 @@ jobs:
             -agent-binary-path=cmd/agent/agent \
             -binary-path=cmd/server/server \
             -server-port=$SERVER_PORT \
+            -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable' \
             -file-storage-path=$TEMP_FILE
 
 # VIII. Задание к восьмому инкременту.
@@ -253,6 +255,7 @@ jobs:
             -agent-binary-path=cmd/agent/agent \
             -binary-path=cmd/server/server \
             -server-port=$SERVER_PORT \
+            -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable' \
             -file-storage-path=$TEMP_FILE
 
 # IX. Задание к девятому инкременту.
@@ -299,41 +302,51 @@ jobs:
             -binary-path=cmd/server/server \
             -server-port=$SERVER_PORT \
             -file-storage-path=$TEMP_FILE \
+            -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable' \
             -key="${TEMP_FILE}"
 
-      # - name: "Code increment #9"
-      #   if: always()
-      #   run: |
-      #     devopstest -test.v -test.run=^TestIteration9$ \
-      #         -source-path=. \
-      #         -binary-path=cmd/server/server \
-      #         -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+# X. Задание к десятому инкременту.
+# Сервер:
+# * Добавьте функциональность подключения к базе данных. В качестве СУБД используйте PostgreSQL версии не ниже 10.
+# * Добавьте хендлер GET /ping, который при запросе проверяет соединение с базой данных.
+#   При успешной проверке хендлер должен вернуть HTTP-статус 200 OK, при неуспешной — 500 Internal Server Error.
+# * Строка с адресом подключения к БД должна получаться из переменной окружения DATABASE_DSN или флага командной строки -d.
+#   Использование этого параметра имеет приоритет над параметром -file-storage-path и автоматически задействует функциональность сервера БД
+# NOTE: Для хранения значений gauge рекомендуется использовать тип: double precision
+      - name: "Code increment #10"
+        if: always()
+        run: |
+          SERVER_PORT=$(random unused-port)
+          ADDRESS="localhost:${SERVER_PORT}"
+          TEMP_FILE=$(random tempfile)
+          devopstest -test.v -test.run=^TestIteration10[b]*$ \
+            -source-path=. \
+            -agent-binary-path=cmd/agent/agent \
+            -binary-path=cmd/server/server \
+            -server-port=$SERVER_PORT \
+            -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable' \
+            -key="${TEMP_FILE}"
 
-      # - name: "Code increment #10"
-      #   if: always()
-      #   run: |
-      #     devopstest -test.v -test.run=^TestIteration10$ \
-      #         -source-path=. \
-      #         -binary-path=cmd/server/server \
-      #         -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+# XI. Задание к одинадцатому инкременту.
+# Сервер:
+# * Перепишите серер так, чтобы СУБД PostgresSQL стала хранилищем сокращенных URL вместо текущей реализации.
+#   Сервису необходимо самостоятельно создать все необходимые таблицы в базе данных,
+#   схема и формат хранения остаются на ваше усмотрение.
 
-      # - name: "Code increment #11"
-      #   if: always()
-      #   run: |
-      #     devopstest -test.v -test.run=^TestIteration11$ \
-      #         -binary-path=cmd/server/server \
-      #         -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+      - name: "Code increment #11"
+        if: always()
+        run: |
+          SERVER_PORT=$(random unused-port)
+          ADDRESS="localhost:${SERVER_PORT}"
+          TEMP_FILE=$(random tempfile)
+          devopstest -test.v -test.run=^TestIteration11$ \
+            -source-path=. \
+            -agent-binary-path=cmd/agent/agent \
+            -binary-path=cmd/server/server \
+            -server-port=$SERVER_PORT \
+            -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable' \
+            -key="${TEMP_FILE}"
 
-      # - name: "Code increment #12"
-      #   if: always()
-      #   run: |
-      #     devopstest -test.v -test.run=^TestIteration12$ \
-      #         -binary-path=cmd/server/server \
-      #         -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+# XII. Задание к двенадцатому инкременту.
 
-      # - name: "Code increment #13"
-      #   if: always()
-      #   run: |
-      #     devopstest -test.v -test.run=^TestIteration13$ \
-      #         -binary-path=cmd/server/server \
-      #         -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+# XIII. Задание к тринадцатому инкременту.
