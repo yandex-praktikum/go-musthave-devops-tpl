@@ -3,14 +3,14 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"os/signal"
+	"sort"
 	"strconv"
-	"strings"
+	_ "strings"
 	"sync"
-	"syscall"
 
 	"github.com/efrikin/go-musthave-devops-tpl/internal/metrics"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 var (
@@ -21,22 +21,13 @@ var (
 )
 
 func httpPrint(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "I need method POST", http.StatusNotFound)
-		return
-	}
-	u := strings.Split(strings.TrimRight(r.URL.Path, "/"), "/")
 
-	if len(u) != 5 {
-		http.Error(w, "Error", http.StatusNotFound)
-		return
-	}
-	if u[1] != "update" {
-		http.Error(w, "Error", http.StatusNotFound)
-		return
-	}
-	if u[2] == gauge.Type() {
-		_, err := strconv.ParseFloat(u[4], 64)
+	metricType := chi.URLParam(r, "metricType")
+	metricName := chi.URLParam(r, "metricName")
+	metricValue := chi.URLParam(r, "metricValue")
+
+	if metricType == gauge.Type() {
+		_, err := strconv.ParseFloat(metricValue, 64)
 		if err != nil {
 			http.Error(w, "BadRequest", http.StatusBadRequest)
 			return
@@ -44,42 +35,76 @@ func httpPrint(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		defer mu.Unlock()
 		w.WriteHeader(http.StatusOK)
-		storage[u[3]] = u[4]
+		storage[metricName] = metricValue
 		return
 	}
-	if u[2] == counter.Type() {
+
+	if metricType == counter.Type() {
 		mu.Lock()
 		defer mu.Unlock()
-		var tmp, ok = storage[u[3]]
+		var tmp, ok = storage[metricName]
 		if !ok {
 			tmp = int64(0)
 		}
-		tmp2, err := strconv.ParseInt(u[4], 10, 64)
+		tmp2, err := strconv.ParseInt(metricValue, 10, 64)
 		if err != nil {
 			http.Error(w, "Bad convenrt int to string", http.StatusBadRequest)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		storage[u[3]] = tmp.(int64) + tmp2
+		storage[metricName] = tmp.(int64) + tmp2
 		return
 	}
 	http.Error(w, "Error", http.StatusNotImplemented)
 }
 
 func httpPrintMetrics(w http.ResponseWriter, r *http.Request) {
+
+	metricName := chi.URLParam(r, "metricName")
+	val, ok := storage[metricName]
+
+	if !ok {
+		http.Error(w,"Not Found", http.StatusNotFound)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "%v\n", storage)
+	fmt.Fprintf(w, "%v\n", val)
+}
+
+func httpPrintMetricsHTML(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, `<html>
+					<head>
+					<title>METRICS</title>
+					<meta http-equiv="refresh" content="10" />
+					</head>
+					<h1><center>METRICS</center></h1>`)
+	keys := make([]string, 0, len(storage))
+	for k := range storage {
+		keys = append(keys, k)
+
+	}
+	sort.Strings(keys)
+
+	for _, v := range keys {
+		fmt.Fprintf(w, "<p>%s=%v</p>", v, storage[v])
+	}
+
+	fmt.Fprintf(w, "</html>")
+
 }
 
 func main() {
-	http.HandleFunc("/", httpPrint)
-	http.HandleFunc("/metrics", httpPrintMetrics)
-	go func() {
-		if err := http.ListenAndServe(":8080", nil); err != nil {
-			panic(err)
-		}
-	}()
-	done := make(chan os.Signal, 1)
-	signal.Notify(done, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
-	<-done
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	// r.Post("/", func(w http.ResponseWriter, r *http.Request) {
+	// 	w.Write([]byte("welcome"))
+	// })
+	r.Post("/update/{metricType}/{metricName}/{metricValue}/", httpPrint)
+	r.Get("/value/{metricType}/{metricName}/", httpPrintMetrics)
+	r.Post("/update/{metricType}/{metricName}/{metricValue}", httpPrint)
+	r.Get("/value/{metricType}/{metricName}", httpPrintMetrics)
+	r.Get("/", httpPrintMetricsHTML)
+	http.ListenAndServe(":8080", r)
 }
