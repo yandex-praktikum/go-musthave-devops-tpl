@@ -14,19 +14,17 @@ import (
 )
 
 var (
-	gauge   = metrics.Gauge{}
-	counter = metrics.Counter{}
 	storage = map[string]interface{}{}
 	mu      = sync.Mutex{}
 )
 
 func httpPrint(w http.ResponseWriter, r *http.Request) {
 
-	metricType := chi.URLParam(r, "metricType")
+	metricType := metrics.MetricType(chi.URLParam(r, "metricType"))
 	metricName := chi.URLParam(r, "metricName")
 	metricValue := chi.URLParam(r, "metricValue")
 
-	if metricType == gauge.Type() {
+	if metricType == metrics.GaugeType {
 		_, err := strconv.ParseFloat(metricValue, 64)
 		if err != nil {
 			http.Error(w, "BadRequest", http.StatusBadRequest)
@@ -39,7 +37,7 @@ func httpPrint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if metricType == counter.Type() {
+	if metricType == metrics.CounterType {
 		mu.Lock()
 		defer mu.Unlock()
 		var tmp, ok = storage[metricName]

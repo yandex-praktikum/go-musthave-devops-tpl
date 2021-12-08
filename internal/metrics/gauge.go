@@ -28,10 +28,11 @@ func (c *Gauge) Name() string {
 	return c.name
 }
 
-func (c *Gauge) Type() string {
-	return "gauge"
+func (c *Gauge) Type() MetricType {
+	return GaugeType
 }
 
 func NewGauge(n string) *Gauge {
 	return &Gauge{name: n}
 }
+

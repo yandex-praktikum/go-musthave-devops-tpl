@@ -29,8 +29,8 @@ func (c *Counter) Name() string {
 	return c.name
 }
 
-func (c *Counter) Type() string {
-	return "counter"
+func (c *Counter) Type() MetricType {
+	return CounterType
 }
 
 func NewCounter(n string) *Counter {
