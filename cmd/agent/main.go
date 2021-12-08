@@ -130,6 +130,10 @@ func main() {
 				if err == nil {
 					r.Body.Close()
 				}
+				if err != nil {
+					fmt.Printf("Unable to send metric %s to server: %v\n", typedV.Name(), err)
+					continue
+				}
 			}
 		}
 	}()
