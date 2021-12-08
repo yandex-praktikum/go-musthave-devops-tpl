@@ -9,7 +9,6 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
-	"time"
 
 	"github.com/efrikin/go-musthave-devops-tpl/internal/metrics"
 )
@@ -17,8 +16,8 @@ import (
 func main() {
 
 	var (
-		ch2           = time.NewTicker(2 * time.Second)
-		ch10          = time.NewTicker(10 * time.Second)
+		pollTicker    = metrics.PollTicker
+		reportTicker  = metrics.ReportTicker
 		Alloc         = metrics.NewGauge("Alloc")
 		BuckHashSys   = metrics.NewGauge("BuckHashSys")
 		Frees         = metrics.NewGauge("Frees")
@@ -50,7 +49,7 @@ func main() {
 	)
 	go func() {
 		m := runtime.MemStats{}
-		for range ch2.C {
+		for range pollTicker.C {
 			runtime.ReadMemStats(&m)
 			Alloc.Set(float64(m.Alloc))
 			BuckHashSys.Set(float64(m.BuckHashSys))
@@ -115,7 +114,7 @@ func main() {
 			PollCount,
 		}
 
-		for range ch10.C {
+		for range reportTicker.C {
 			for _, v := range m {
 				var url string
 				typedV, ok := v.(*metrics.Gauge)
@@ -137,3 +136,4 @@ func main() {
 	signal.Notify(done, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
 	<-done
 }
+
