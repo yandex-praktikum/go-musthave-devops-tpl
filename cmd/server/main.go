@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"sort"
 	"strconv"
-	_ "strings"
 	"sync"
+        "html/template"
 
 	"github.com/efrikin/go-musthave-devops-tpl/internal/metrics"
 	"github.com/go-chi/chi/v5"
@@ -71,25 +70,21 @@ func httpPrintMetrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func httpPrintMetricsHTML(w http.ResponseWriter, r *http.Request) {
+	templ, _ := template.New("printMetricsHTML").Parse(`
+	<html>
+	  <head>
+	    <title>METRICS</title>
+	   <meta http-equiv="refresh" content="10" />
+	  </head>
+	  <h1><center>METRICS</center></h1>
+	  {{ range $key, $value := . }}
+	  <b>{{ $key | printf "%s" }}</b>:{{ $value | printf "\t%v"}} <br>
+	  {{ end }}
+	</html>
+	`)
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, `<html>
-					<head>
-					<title>METRICS</title>
-					<meta http-equiv="refresh" content="10" />
-					</head>
-					<h1><center>METRICS</center></h1>`)
-	keys := make([]string, 0, len(storage))
-	for k := range storage {
-		keys = append(keys, k)
 
-	}
-	sort.Strings(keys)
-
-	for _, v := range keys {
-		fmt.Fprintf(w, "<p>%s=%v</p>", v, storage[v])
-	}
-
-	fmt.Fprintf(w, "</html>")
+	templ.Execute(w, storage)
 
 }
 
