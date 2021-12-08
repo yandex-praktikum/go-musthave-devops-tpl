@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
-
+	"time"
 	"github.com/efrikin/go-musthave-devops-tpl/internal/metrics"
 )
 
@@ -48,6 +48,7 @@ func main() {
 		PollCount     = metrics.NewCounter("PollCount")
 	)
 	go func() {
+		rand.Seed(time.Now().UnixNano())
 		m := runtime.MemStats{}
 		for range pollTicker.C {
 			runtime.ReadMemStats(&m)
