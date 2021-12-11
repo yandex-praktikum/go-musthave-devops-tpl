@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"sync"
+	"fmt"
 )
 
 type Gauge struct {
@@ -34,5 +35,10 @@ func (c *Gauge) Type() MetricType {
 
 func NewGauge(n string) *Gauge {
 	return &Gauge{name: n}
+}
+
+
+func (c *Gauge) String() string {
+	return fmt.Sprintf("%v", c.Get())
 }
 

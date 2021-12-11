@@ -6,7 +6,7 @@ import (
 
 func TestCounter(t *testing.T) {
 	c := Counter{}
-	c.Increment()
+	c.Increment(1)
 	if c.Get() != 1 {
 		t.Error("Result not equal 1")
 	}

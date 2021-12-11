@@ -79,7 +79,7 @@ func main() {
 			StackSys.Set(float64(m.StackSys))
 			Sys.Set(float64(m.Sys))
 			RandomValue.Set(rand.Float64())
-			PollCount.Increment()
+			PollCount.Increment(1)
 		}
 	}()
 	go func() {

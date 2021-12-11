@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"sync"
+	"fmt"
 )
 
 type Counter struct {
@@ -10,10 +11,10 @@ type Counter struct {
 	mu    sync.Mutex
 }
 
-func (c *Counter) Increment() {
+func (c *Counter) Increment(i int64) {
 	c.mu.Lock()
 	// TODO: There is problem. Handle overflow
-	c.count++
+	c.count+=i
 	c.mu.Unlock()
 }
 
@@ -35,4 +36,8 @@ func (c *Counter) Type() MetricType {
 
 func NewCounter(n string) *Counter {
 	return &Counter{name: n}
+}
+
+func (c *Counter) String() string {
+	return fmt.Sprintf("%v", c.Get())
 }
