@@ -1,8 +1,8 @@
 package metrics
 
 import (
-	"sync"
 	"fmt"
+	"sync"
 )
 
 type Counter struct {
@@ -14,7 +14,7 @@ type Counter struct {
 func (c *Counter) Increment(i int64) {
 	c.mu.Lock()
 	// TODO: There is problem. Handle overflow
-	c.count+=i
+	c.count += i
 	c.mu.Unlock()
 }
 

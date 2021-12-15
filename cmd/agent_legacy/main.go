@@ -16,8 +16,8 @@ import (
 func main() {
 
 	var (
-		pollTicker    = metrics.PollTicker
-		reportTicker  = metrics.ReportTicker
+		pollTicker    = time.NewTicker(metrics.PullTicker * time.Second)
+		reportTicker  = time.NewTicker(metrics.ReportTicker * time.Second)
 		Alloc         = metrics.NewGauge("Alloc")
 		BuckHashSys   = metrics.NewGauge("BuckHashSys")
 		Frees         = metrics.NewGauge("Frees")

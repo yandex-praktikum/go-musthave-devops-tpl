@@ -11,15 +11,20 @@ import (
 	"syscall"
 	"time"
 	"encoding/json"
+	"github.com/caarlos0/env/v6"
 	"github.com/efrikin/go-musthave-devops-tpl/internal/metrics"
 	"github.com/efrikin/go-musthave-devops-tpl/internal/models"
 )
 
 func main() {
-
+	var cfg models.Config
+	err := env.Parse(&cfg)
+	if err != nil {
+		panic(err)
+        }
 	var (
-		pollTicker    = metrics.PollTicker
-		reportTicker  = metrics.ReportTicker
+		pollTicker   = time.NewTicker(cfg.PoolInterval)
+		reportTicker = time.NewTicker(cfg.ReportInterval)
 		Alloc         = metrics.NewGauge("Alloc")
 		TotalAlloc    = metrics.NewGauge("TotalAlloc")
 		BuckHashSys   = metrics.NewGauge("BuckHashSys")
@@ -50,6 +55,7 @@ func main() {
 		RandomValue   = metrics.NewGauge("RandomValue")
 		PollCount     = metrics.NewCounter("PollCount")
 	)
+
 	go func() {
 		rand.Seed(time.Now().UnixNano())
 		m := runtime.MemStats{}
@@ -143,7 +149,7 @@ func main() {
 				b.Reset()
 				b.Write(body)
 				fmt.Printf("%s\n", b.String())
-				r, err := http.Post("http://localhost:8080/update", "application/json", b)
+				r, err := http.Post(fmt.Sprintf("http://%s/update", cfg.Address), "application/json", b)
 				if err == nil {
 					r.Body.Close()
 				}

@@ -8,6 +8,7 @@ import (
         "html/template"
 	"encoding/json"
 	"io"
+	"github.com/caarlos0/env/v6"
 	"github.com/efrikin/go-musthave-devops-tpl/internal/metrics"
 	"github.com/efrikin/go-musthave-devops-tpl/internal/models"
 	"github.com/go-chi/chi/v5"
@@ -212,6 +213,11 @@ func httpPrintMetricsHTML(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	var cfg models.Config
+	err := env.Parse(&cfg)
+	if err != nil {
+		panic(err)
+	}
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
@@ -224,7 +230,9 @@ func main() {
 	r.Post("/value", httpPrintMetrics)
 	r.Post("/value/", httpPrintMetrics)
 	r.Get("/", httpPrintMetricsHTML)
-
-	http.ListenAndServe(":8080", r)
+	err = http.ListenAndServe(cfg.Address, r)
+	if err != nil {
+		panic(err)
+	}
 }
 

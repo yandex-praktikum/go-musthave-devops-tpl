@@ -1,14 +1,14 @@
 package metrics
 
 import (
-	"sync"
 	"fmt"
+	"sync"
 )
 
 type Gauge struct {
 	gauge float64
-	name string
-	mu sync.Mutex
+	name  string
+	mu    sync.Mutex
 }
 
 func (c *Gauge) Set(v float64) {
@@ -37,8 +37,6 @@ func NewGauge(n string) *Gauge {
 	return &Gauge{name: n}
 }
 
-
 func (c *Gauge) String() string {
 	return fmt.Sprintf("%v", c.Get())
 }
-
