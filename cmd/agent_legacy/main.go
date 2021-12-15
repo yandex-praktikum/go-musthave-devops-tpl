@@ -10,9 +10,7 @@ import (
 	"runtime"
 	"syscall"
 	"time"
-	"encoding/json"
 	"github.com/efrikin/go-musthave-devops-tpl/internal/metrics"
-	"github.com/efrikin/go-musthave-devops-tpl/internal/models"
 )
 
 func main() {
@@ -21,7 +19,6 @@ func main() {
 		pollTicker    = metrics.PollTicker
 		reportTicker  = metrics.ReportTicker
 		Alloc         = metrics.NewGauge("Alloc")
-		TotalAlloc    = metrics.NewGauge("TotalAlloc")
 		BuckHashSys   = metrics.NewGauge("BuckHashSys")
 		Frees         = metrics.NewGauge("Frees")
 		GCCPUFraction = metrics.NewGauge("GCCPUFraction")
@@ -56,7 +53,6 @@ func main() {
 		for range pollTicker.C {
 			runtime.ReadMemStats(&m)
 			Alloc.Set(float64(m.Alloc))
-			TotalAlloc.Set(float64(m.TotalAlloc))
 			BuckHashSys.Set(float64(m.BuckHashSys))
 			Frees.Set(float64(m.Frees))
 			GCCPUFraction.Set(float64(m.GCCPUFraction))
@@ -90,7 +86,6 @@ func main() {
 		b := bytes.NewBuffer([]byte{})
 		var m = []interface{}{
 			Alloc,
-			TotalAlloc,
 			BuckHashSys,
 			Frees,
 			GCCPUFraction,
@@ -122,28 +117,16 @@ func main() {
 
 		for range reportTicker.C {
 			for _, v := range m {
-				var body []byte
+				var url string
 				typedV, ok := v.(*metrics.Gauge)
 				if ok {
-					tmpV := typedV.Get()
-					body, _ = json.Marshal(models.Metrics{
-						ID: typedV.Name(),
-						MType: string(typedV.Type()),
-						Value: &tmpV,
-					})
+					url = fmt.Sprintf("http://localhost:8080/update/%s/%s/%f/", typedV.Type(), typedV.Name(), typedV.Get())
 				} else {
 					typedV := v.(*metrics.Counter)
-					tmpV := typedV.Get()
-					body, _ = json.Marshal(models.Metrics{
-						ID: typedV.Name(),
-						MType: string(typedV.Type()),
-						Delta: &tmpV,
-					})
+					url = fmt.Sprintf("http://localhost:8080/update/%s/%s/%d/", typedV.Type(), typedV.Name(), typedV.Get())
 				}
-				b.Reset()
-				b.Write(body)
-				fmt.Printf("%s\n", b.String())
-				r, err := http.Post("http://localhost:8080/update", "application/json", b)
+				fmt.Printf("%v\n", url)
+				r, err := http.Post(url, "text/plain", b)
 				if err == nil {
 					r.Body.Close()
 				}

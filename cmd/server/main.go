@@ -6,8 +6,10 @@ import (
 	"strconv"
 	"sync"
         "html/template"
-
+	"encoding/json"
+	"io"
 	"github.com/efrikin/go-musthave-devops-tpl/internal/metrics"
+	"github.com/efrikin/go-musthave-devops-tpl/internal/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -17,6 +19,50 @@ var (
 	counterStorage = map[string]*metrics.Counter{}
 	mu      = sync.Mutex{}
 )
+
+func httpPrintJSON(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "BadRequests", http.StatusBadRequest)
+	}
+	v := models.Metrics{}
+	err = json.Unmarshal(body, &v)
+	if err != nil {
+		http.Error(w, "BadRequests", http.StatusBadRequest)
+	}
+
+	metricType := metrics.MetricType(v.MType)
+	metricName := v.ID
+
+	if metricType == metrics.GaugeType {
+		metricValue := v.Value
+		mu.Lock()
+		defer mu.Unlock()
+		w.WriteHeader(http.StatusOK)
+		metric := &metrics.Gauge{}
+		metric.Set(*metricValue)
+		gaugeStorage[metricName] = metric
+		return
+	}
+
+	if metricType == metrics.CounterType {
+		metricValue := v.Delta
+		mu.Lock()
+		defer mu.Unlock()
+		var metric, ok = counterStorage[metricName]
+		if !ok {
+			metric = &metrics.Counter{}
+			counterStorage[metricName] =  metric
+		}
+		w.WriteHeader(http.StatusOK)
+		metric.Increment(*metricValue)
+		// I want fix this test =\
+		fmt.Fprintf(w, "{}")
+		return
+	}
+	http.Error(w, "Error", http.StatusNotImplemented)
+}
 
 func httpPrint(w http.ResponseWriter, r *http.Request) {
 
@@ -58,6 +104,56 @@ func httpPrint(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Error(w, "Error", http.StatusNotImplemented)
 }
+
+func httpPrintMetrics(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "BadRequests", http.StatusBadRequest)
+	}
+	v := models.Metrics{}
+	err = json.Unmarshal(body, &v)
+	if err != nil {
+		http.Error(w, "BadRequests", http.StatusBadRequest)
+	}
+
+	metricType := metrics.MetricType(v.MType)
+	metricName := v.ID
+
+	if metricType == metrics.GaugeType {
+		mu.Lock()
+		defer mu.Unlock()
+		metric, ok := gaugeStorage[metricName]
+		if !ok {
+			http.Error(w,"NotFound", http.StatusNotFound)
+			return
+		}
+		tmpV := metric.Get()
+		v.Value = &tmpV
+		body, _ = json.Marshal(v)
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "%s", body)
+		return
+	}
+
+	if metricType == metrics.CounterType {
+		mu.Lock()
+		defer mu.Unlock()
+		metric, ok := counterStorage[metricName]
+		if !ok {
+			http.Error(w,"NotFound", http.StatusNotFound)
+			return
+		}
+		tmpV := metric.Get()
+		v.Delta = &tmpV
+		body, _ = json.Marshal(v)
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "%s", body)
+		return
+	}
+	// return
+}
+
 
 func httpPrintGaugeMetrics(w http.ResponseWriter, r *http.Request) {
 
@@ -118,13 +214,17 @@ func httpPrintMetricsHTML(w http.ResponseWriter, r *http.Request) {
 func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
 	r.Post("/update/{metricType}/{metricName}/{metricValue}/", httpPrint)
-	// r.Get("/value/gauge/{metricName}", httpPrintGaugeMetrics)
+	r.Post("/update", httpPrintJSON)
+	r.Post("/update/", httpPrintJSON)
 	r.Get("/value/" + string(metrics.GaugeType) + "/{metricName}", httpPrintGaugeMetrics)
-	// fmt.Println(string(metrics.GaugeType))
 	r.Post("/update/{metricType}/{metricName}/{metricValue}", httpPrint)
 	r.Get("/value/" + string(metrics.GaugeType) + "/{metricName}", httpPrintCounterMetrics)
+	r.Post("/value", httpPrintMetrics)
+	r.Post("/value/", httpPrintMetrics)
 	r.Get("/", httpPrintMetricsHTML)
+
 	http.ListenAndServe(":8080", r)
 }
 
