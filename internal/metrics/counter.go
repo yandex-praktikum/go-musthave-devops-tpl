@@ -6,28 +6,28 @@ import (
 )
 
 type Counter struct {
-	count int64
-	name  string
+	Count int64
+	ID    string
 	mu    sync.Mutex
 }
 
 func (c *Counter) Increment(i int64) {
 	c.mu.Lock()
 	// TODO: There is problem. Handle overflow
-	c.count += i
+	c.Count += i
 	c.mu.Unlock()
 }
 
 func (c *Counter) Get() int64 {
 	var tmp int64
 	c.mu.Lock()
-	tmp = c.count
+	tmp = c.Count
 	c.mu.Unlock()
 	return tmp
 }
 
 func (c *Counter) Name() string {
-	return c.name
+	return c.ID
 }
 
 func (c *Counter) Type() MetricType {
@@ -35,7 +35,7 @@ func (c *Counter) Type() MetricType {
 }
 
 func NewCounter(n string) *Counter {
-	return &Counter{name: n}
+	return &Counter{ID: n}
 }
 
 func (c *Counter) String() string {

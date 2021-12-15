@@ -1,13 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"html/template"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"sync"
-        "html/template"
-	"encoding/json"
-	"io"
+	"time"
+
 	"github.com/caarlos0/env/v6"
 	"github.com/efrikin/go-musthave-devops-tpl/internal/metrics"
 	"github.com/efrikin/go-musthave-devops-tpl/internal/models"
@@ -15,10 +18,15 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+type Storage struct {
+	Gauge   map[string]*metrics.Gauge
+	Counter map[string]*metrics.Counter
+}
+
 var (
-	gaugeStorage = map[string]*metrics.Gauge{}
+	gaugeStorage   = map[string]*metrics.Gauge{}
 	counterStorage = map[string]*metrics.Counter{}
-	mu      = sync.Mutex{}
+	mu             = sync.Mutex{}
 )
 
 func httpPrintJSON(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +49,7 @@ func httpPrintJSON(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		defer mu.Unlock()
 		w.WriteHeader(http.StatusOK)
-		metric := &metrics.Gauge{}
+		metric := metrics.NewGauge(metricName)
 		metric.Set(*metricValue)
 		gaugeStorage[metricName] = metric
 		return
@@ -53,12 +61,12 @@ func httpPrintJSON(w http.ResponseWriter, r *http.Request) {
 		defer mu.Unlock()
 		var metric, ok = counterStorage[metricName]
 		if !ok {
-			metric = &metrics.Counter{}
-			counterStorage[metricName] =  metric
+			metric = metrics.NewCounter(metricName)
+			counterStorage[metricName] = metric
 		}
 		w.WriteHeader(http.StatusOK)
 		metric.Increment(*metricValue)
-		// I want fix this test =\
+		// I want to fix this test =\
 		fmt.Fprintf(w, "{}")
 		return
 	}
@@ -92,7 +100,7 @@ func httpPrint(w http.ResponseWriter, r *http.Request) {
 		var metric, ok = counterStorage[metricName]
 		if !ok {
 			metric = &metrics.Counter{}
-			counterStorage[metricName] =  metric
+			counterStorage[metricName] = metric
 		}
 		metricValueTyped, err := strconv.ParseInt(metricValue, 10, 64)
 		if err != nil {
@@ -126,7 +134,7 @@ func httpPrintMetrics(w http.ResponseWriter, r *http.Request) {
 		defer mu.Unlock()
 		metric, ok := gaugeStorage[metricName]
 		if !ok {
-			http.Error(w,"NotFound", http.StatusNotFound)
+			http.Error(w, "NotFound", http.StatusNotFound)
 			return
 		}
 		tmpV := metric.Get()
@@ -142,7 +150,7 @@ func httpPrintMetrics(w http.ResponseWriter, r *http.Request) {
 		defer mu.Unlock()
 		metric, ok := counterStorage[metricName]
 		if !ok {
-			http.Error(w,"NotFound", http.StatusNotFound)
+			http.Error(w, "NotFound", http.StatusNotFound)
 			return
 		}
 		tmpV := metric.Get()
@@ -155,14 +163,13 @@ func httpPrintMetrics(w http.ResponseWriter, r *http.Request) {
 	// return
 }
 
-
 func httpPrintGaugeMetrics(w http.ResponseWriter, r *http.Request) {
 
 	metricName := chi.URLParam(r, "metricName")
 	val, ok := gaugeStorage[metricName]
 
 	if !ok {
-		http.Error(w,"Not Found", http.StatusNotFound)
+		http.Error(w, "Not Found", http.StatusNotFound)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -175,14 +182,14 @@ func httpPrintCounterMetrics(w http.ResponseWriter, r *http.Request) {
 	val, ok := counterStorage[metricName]
 
 	if !ok {
-		http.Error(w,"Not Found", http.StatusNotFound)
+		http.Error(w, "Not Found", http.StatusNotFound)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "%v\n", val)
 }
 
-func httpPrintMetricsHTML(w http.ResponseWriter, r *http.Request) {
+func httpPrintMetricsHTML(w http.ResponseWriter, _ *http.Request) {
 	gaugeTempl, _ := template.New("printMetricsHTML").Parse(`
 	<html>
 	  <head>
@@ -212,10 +219,73 @@ func httpPrintMetricsHTML(w http.ResponseWriter, r *http.Request) {
 	counterTempl.Execute(w, counterStorage)
 }
 
+func restoreFromFile(filename string) error {
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return err
+	}
+	tmp := Storage{}
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+	counterStorage = tmp.Counter
+	gaugeStorage = tmp.Gauge
+	fmt.Printf("%#v\n%#v\n%#v", tmp, counterStorage, gaugeStorage)
+	return nil
+}
+
+func dumpToFile(filename string) error {
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	data, err := json.Marshal(Storage{
+		Counter: counterStorage,
+		Gauge:   gaugeStorage,
+	})
+	if err != nil {
+		return err
+	}
+	if _, err := f.Write(data); err != nil {
+		return err
+	}
+	return nil
+}
+
+func startStore(config models.Config) error {
+	if config.StoreFile == "" {
+		return nil
+	}
+	if config.StoreInterval == 0 {
+		return nil
+	}
+	if config.Restore {
+		if err := restoreFromFile(config.StoreFile); err != nil {
+			return err
+		}
+	}
+	storeTickerInterval := time.NewTicker(config.StoreInterval)
+	go func() {
+		for range storeTickerInterval.C {
+			dumpToFile(config.StoreFile)
+		}
+	}()
+	return nil
+}
+
 func main() {
 	var cfg models.Config
 	err := env.Parse(&cfg)
 	if err != nil {
+		panic(err)
+	}
+	if err := startStore(cfg); err != nil {
 		panic(err)
 	}
 	r := chi.NewRouter()
@@ -224,9 +294,9 @@ func main() {
 	r.Post("/update/{metricType}/{metricName}/{metricValue}/", httpPrint)
 	r.Post("/update", httpPrintJSON)
 	r.Post("/update/", httpPrintJSON)
-	r.Get("/value/" + string(metrics.GaugeType) + "/{metricName}", httpPrintGaugeMetrics)
+	r.Get("/value/"+string(metrics.GaugeType)+"/{metricName}", httpPrintGaugeMetrics)
 	r.Post("/update/{metricType}/{metricName}/{metricValue}", httpPrint)
-	r.Get("/value/" + string(metrics.GaugeType) + "/{metricName}", httpPrintCounterMetrics)
+	r.Get("/value/"+string(metrics.GaugeType)+"/{metricName}", httpPrintCounterMetrics)
 	r.Post("/value", httpPrintMetrics)
 	r.Post("/value/", httpPrintMetrics)
 	r.Get("/", httpPrintMetricsHTML)
@@ -235,4 +305,3 @@ func main() {
 		panic(err)
 	}
 }
-
