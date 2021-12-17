@@ -23,13 +23,17 @@ type Storage struct {
 	Counter map[string]*metrics.Counter
 }
 
+type Server struct {
+	cfg models.Config
+}
+
 var (
 	gaugeStorage   = map[string]*metrics.Gauge{}
 	counterStorage = map[string]*metrics.Counter{}
 	mu             = sync.Mutex{}
 )
 
-func httpPrintJSON(w http.ResponseWriter, r *http.Request) {
+func (s *Server) httpPrintJSON(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -52,6 +56,9 @@ func httpPrintJSON(w http.ResponseWriter, r *http.Request) {
 		metric := metrics.NewGauge(metricName)
 		metric.Set(*metricValue)
 		gaugeStorage[metricName] = metric
+		if s.cfg.StoreInterval == 0 {
+			dumpToFile(s.cfg.StoreFile)
+		}
 		return
 	}
 
@@ -68,12 +75,15 @@ func httpPrintJSON(w http.ResponseWriter, r *http.Request) {
 		metric.Increment(*metricValue)
 		// I want to fix this test =\
 		fmt.Fprintf(w, "{}")
+		if s.cfg.StoreInterval == 0 {
+			dumpToFile(s.cfg.StoreFile)
+		}
 		return
 	}
 	http.Error(w, "Error", http.StatusNotImplemented)
 }
 
-func httpPrint(w http.ResponseWriter, r *http.Request) {
+func (s *Server) httpPrint(w http.ResponseWriter, r *http.Request) {
 
 	metricType := metrics.MetricType(chi.URLParam(r, "metricType"))
 	metricName := chi.URLParam(r, "metricName")
@@ -288,17 +298,18 @@ func main() {
 	if err := startStore(cfg); err != nil {
 		panic(err)
 	}
+	s := Server{cfg}
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Post("/update/{metricType}/{metricName}/{metricValue}/", httpPrint)
-	r.Post("/update", httpPrintJSON)
-	r.Post("/update/", httpPrintJSON)
-	r.Get("/value/"+string(metrics.GaugeType)+"/{metricName}", httpPrintGaugeMetrics)
-	r.Post("/update/{metricType}/{metricName}/{metricValue}", httpPrint)
-	r.Get("/value/"+string(metrics.GaugeType)+"/{metricName}", httpPrintCounterMetrics)
+	r.Post("/update", s.httpPrintJSON)
+	r.Post("/update/", s.httpPrintJSON)
+	r.Post("/update/{metricType}/{metricName}/{metricValue}", s.httpPrint)
+	r.Post("/update/{metricType}/{metricName}/{metricValue}/", s.httpPrint)
 	r.Post("/value", httpPrintMetrics)
 	r.Post("/value/", httpPrintMetrics)
+	r.Get("/value/"+string(metrics.GaugeType)+"/{metricName}", httpPrintGaugeMetrics)
+	r.Get("/value/"+string(metrics.GaugeType)+"/{metricName}", httpPrintCounterMetrics)
 	r.Get("/", httpPrintMetricsHTML)
 	err = http.ListenAndServe(cfg.Address, r)
 	if err != nil {
