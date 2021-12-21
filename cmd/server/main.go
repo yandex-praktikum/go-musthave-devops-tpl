@@ -2,13 +2,17 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/caarlos0/env/v6"
@@ -31,6 +35,7 @@ var (
 	gaugeStorage   = map[string]*metrics.Gauge{}
 	counterStorage = map[string]*metrics.Counter{}
 	mu             = sync.Mutex{}
+	logger         = log.New(io.Discard, "", log.LstdFlags)
 )
 
 func (s *Server) httpPrintJSON(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +49,7 @@ func (s *Server) httpPrintJSON(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "BadRequests", http.StatusBadRequest)
 	}
-
+	logger.Printf("SET: %#v", v)
 	metricType := metrics.MetricType(v.MType)
 	metricName := v.ID
 
@@ -135,7 +140,7 @@ func httpPrintMetrics(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "BadRequests", http.StatusBadRequest)
 	}
-
+	logger.Printf("GET: %#v", v)
 	metricType := metrics.MetricType(v.MType)
 	metricName := v.ID
 
@@ -144,6 +149,7 @@ func httpPrintMetrics(w http.ResponseWriter, r *http.Request) {
 		defer mu.Unlock()
 		metric, ok := gaugeStorage[metricName]
 		if !ok {
+			logger.Printf("P GET NOT FOUND: %#v", v)
 			http.Error(w, "NotFound", http.StatusNotFound)
 			return
 		}
@@ -160,6 +166,7 @@ func httpPrintMetrics(w http.ResponseWriter, r *http.Request) {
 		defer mu.Unlock()
 		metric, ok := counterStorage[metricName]
 		if !ok {
+			logger.Printf("P GET NOT FOUND: %#v", v)
 			http.Error(w, "NotFound", http.StatusNotFound)
 			return
 		}
@@ -170,6 +177,9 @@ func httpPrintMetrics(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%s", body)
 		return
 	}
+
+	logger.Printf("P GET NOT FOUND: %#v", v)
+	http.Error(w, "Error", http.StatusNotImplemented)
 	// return
 }
 
@@ -243,9 +253,14 @@ func restoreFromFile(filename string) error {
 	if err := json.Unmarshal(data, &tmp); err != nil {
 		return err
 	}
-	counterStorage = tmp.Counter
-	gaugeStorage = tmp.Gauge
-	fmt.Printf("%#v\n%#v\n%#v", tmp, counterStorage, gaugeStorage)
+	if tmp.Counter != nil {
+		counterStorage = tmp.Counter
+	}
+	if tmp.Gauge != nil {
+		gaugeStorage = tmp.Gauge
+	}
+	// For debug
+	// fmt.Printf("%#v\n%#v\n%#v", tmp, counterStorage, gaugeStorage)
 	return nil
 }
 
@@ -276,9 +291,7 @@ func startStore(config models.Config) error {
 		return nil
 	}
 	if config.Restore {
-		if err := restoreFromFile(config.StoreFile); err != nil {
-			return err
-		}
+		restoreFromFile(config.StoreFile)
 	}
 	storeTickerInterval := time.NewTicker(config.StoreInterval)
 	go func() {
@@ -291,17 +304,22 @@ func startStore(config models.Config) error {
 
 func main() {
 	var cfg models.Config
+	flag.StringVar(&cfg.Address, "a", "127.0.0.1:8080", "Listen to address:port")
+	flag.StringVar(&cfg.StoreFile, "f", "/tmp/devops-metrics-db.json", "Save metrics to file")
+	flag.BoolVar(&cfg.Restore, "r", true, "Restore from file")
+	flag.DurationVar(&cfg.StoreInterval, "i", 300*time.Second, "Interval of store to file")
+	flag.Parse()
 	err := env.Parse(&cfg)
 	if err != nil {
-		panic(err)
+		logger.Panic(err)
 	}
 	if err := startStore(cfg); err != nil {
-		panic(err)
+		logger.Panic(err)
 	}
 	s := Server{cfg}
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	// r.Use(middleware.Recoverer)
 	r.Post("/update", s.httpPrintJSON)
 	r.Post("/update/", s.httpPrintJSON)
 	r.Post("/update/{metricType}/{metricName}/{metricValue}", s.httpPrint)
@@ -309,10 +327,17 @@ func main() {
 	r.Post("/value", httpPrintMetrics)
 	r.Post("/value/", httpPrintMetrics)
 	r.Get("/value/"+string(metrics.GaugeType)+"/{metricName}", httpPrintGaugeMetrics)
-	r.Get("/value/"+string(metrics.GaugeType)+"/{metricName}", httpPrintCounterMetrics)
+	r.Get("/value/"+string(metrics.CounterType)+"/{metricName}", httpPrintCounterMetrics)
 	r.Get("/", httpPrintMetricsHTML)
-	err = http.ListenAndServe(cfg.Address, r)
-	if err != nil {
-		panic(err)
-	}
+	go func() {
+		logger.Printf("%#v\n", cfg)
+		err = http.ListenAndServe(cfg.Address, r)
+		if err != nil {
+			logger.Panic(err)
+		}
+	}()
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
+	<-done
+	logger.Printf("DONE!!!!!!!!!!!!!!!!")
 }

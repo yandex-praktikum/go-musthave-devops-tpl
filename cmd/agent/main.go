@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
+	"flag"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -10,7 +12,7 @@ import (
 	"runtime"
 	"syscall"
 	"time"
-	"encoding/json"
+
 	"github.com/caarlos0/env/v6"
 	"github.com/efrikin/go-musthave-devops-tpl/internal/metrics"
 	"github.com/efrikin/go-musthave-devops-tpl/internal/models"
@@ -18,13 +20,17 @@ import (
 
 func main() {
 	var cfg models.Config
+	flag.StringVar(&cfg.Address, "a", "127.0.0.1:8080", "Send metrics to address:port")
+	flag.DurationVar(&cfg.ReportInterval, "r", 10*time.Second, "Report of interval")
+	flag.DurationVar(&cfg.PoolInterval, "p", 2*time.Second, "Pool of interval")
+	flag.Parse()
 	err := env.Parse(&cfg)
 	if err != nil {
 		panic(err)
-        }
+	}
 	var (
-		pollTicker   = time.NewTicker(cfg.PoolInterval)
-		reportTicker = time.NewTicker(cfg.ReportInterval)
+		pollTicker    = time.NewTicker(cfg.PoolInterval)
+		reportTicker  = time.NewTicker(cfg.ReportInterval)
 		Alloc         = metrics.NewGauge("Alloc")
 		TotalAlloc    = metrics.NewGauge("TotalAlloc")
 		BuckHashSys   = metrics.NewGauge("BuckHashSys")
@@ -133,7 +139,7 @@ func main() {
 				if ok {
 					tmpV := typedV.Get()
 					body, _ = json.Marshal(models.Metrics{
-						ID: typedV.Name(),
+						ID:    typedV.Name(),
 						MType: string(typedV.Type()),
 						Value: &tmpV,
 					})
@@ -141,7 +147,7 @@ func main() {
 					typedV := v.(*metrics.Counter)
 					tmpV := typedV.Get()
 					body, _ = json.Marshal(models.Metrics{
-						ID: typedV.Name(),
+						ID:    typedV.Name(),
 						MType: string(typedV.Type()),
 						Delta: &tmpV,
 					})
@@ -164,4 +170,3 @@ func main() {
 	signal.Notify(done, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
 	<-done
 }
-
