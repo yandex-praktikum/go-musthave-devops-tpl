@@ -190,7 +190,7 @@ jobs:
             -binary-path=cmd/server/server \
             -server-port=$SERVER_PORT
 
-# VI. Задание к пятому инкременту.
+# VI. Задание к шестому инкременту.
 # Доработать сервер, что бы он с заданной периодичностью сохранял текущие значения метрик на диск в указанный файл.
 # На старте опционально мог загружать сохраненные ранее значения.
 # При штатном завершении сервера, все накопленные данные должны сохраняться.
@@ -394,3 +394,18 @@ jobs:
 #   * Имя метрики: "TotalMemory", тип: gauge
 #   * Имя метрики: "FreeMemory", тип: gauge
 #   * Имя метрики: "CPUutilization1", тип: gauge (точное количество - по числу CPU определяемое во время исполнения)
+
+      - name: "Code increment #14"
+        if: always()
+        run: |
+          SERVER_PORT=$(random unused-port)
+          ADDRESS="localhost:${SERVER_PORT}"
+          TEMP_FILE=$(random tempfile)
+          devopstest -test.v -test.run=^TestIteration14$ \
+            -source-path=. \
+            -agent-binary-path=cmd/agent/agent \
+            -binary-path=cmd/server/server \
+            -server-port=$SERVER_PORT \
+            -file-storage-path=$TEMP_FILE \
+            -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable' \
+            -key="${TEMP_FILE}"
