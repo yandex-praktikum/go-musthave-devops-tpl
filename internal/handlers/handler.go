@@ -36,5 +36,6 @@ func StatusHandler(rw http.ResponseWriter, r *http.Request) {
 
 	// Other HTTP methods (eg PUT, PATCH, etc) are not handled by the above
 	// so inform the client with appropriate status code
+
 	rw.WriteHeader(http.StatusMethodNotAllowed)
 }
