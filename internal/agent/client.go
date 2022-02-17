@@ -19,13 +19,15 @@ type Monitor struct {
 	types string
 }
 
-func NewMonitor(duration int) {
+func NewMonitor(duration int, ch chan int, cnt int) {
 	//var m Monitor
+
 	var rtm runtime.MemStats
+	//counter := 0
 	var interval = time.Duration(duration) * time.Second
 	for {
 		<-time.After(interval)
-
+		ch <- 1
 		// Read full mem stats
 		runtime.ReadMemStats(&rtm)
 
@@ -53,14 +55,14 @@ func NewMonitor(duration int) {
 		endpoint := "http://localhost:8080/update/"
 		// контейнер данных для запроса
 		data := url.Values{}
-
+		// cnt :=counter++
 		long := ""
 		Alloc := Monitor{"Alloc", rtm.Alloc, "gauge"}
 		TotalAlloc := Monitor{"TotalAlloc", rtm.Alloc, "gauge"}
 		Sys := Monitor{"Sys", rtm.Sys, "Gauge"}
 		Mallocs := Monitor{"Mallocs", rtm.Mallocs, "gauge"}
 		Frees := Monitor{"NumGC", rtm.Frees, "gauge"}
-		PollCount := Monitor{"PollCount", rtm.Frees, "counter"}
+		PollCount := Monitor{"PollCount", uint64(cnt), "counter"}
 
 		v := []Monitor{Alloc, TotalAlloc, Sys, Mallocs, Frees, PollCount}
 		for _, service := range v {
