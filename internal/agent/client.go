@@ -19,14 +19,15 @@ type Monitor struct {
 	types string
 }
 
-func NewMonitor(duration int, ch chan int, cnt int) {
+func NewMonitor(duration int64, ch chan int64, counter int64) {
 	//var m Monitor
-
+	//counter++
 	var rtm runtime.MemStats
 	//counter := 0
 	var interval = time.Duration(duration) * time.Second
-	for {
-		<-time.After(interval)
+	//for {
+	//<-time.After(interval) //place of problem
+	time.AfterFunc(interval, func() {
 		ch <- 1
 		// Read full mem stats
 		runtime.ReadMemStats(&rtm)
@@ -62,7 +63,7 @@ func NewMonitor(duration int, ch chan int, cnt int) {
 		Sys := Monitor{"Sys", rtm.Sys, "Gauge"}
 		Mallocs := Monitor{"Mallocs", rtm.Mallocs, "gauge"}
 		Frees := Monitor{"NumGC", rtm.Frees, "gauge"}
-		PollCount := Monitor{"PollCount", uint64(cnt), "counter"}
+		PollCount := Monitor{"PollCount", uint64(counter), "counter"}
 
 		v := []Monitor{Alloc, TotalAlloc, Sys, Mallocs, Frees, PollCount}
 		for _, service := range v {
@@ -103,5 +104,5 @@ func NewMonitor(duration int, ch chan int, cnt int) {
 			// и печатаем его
 			fmt.Println(string(body))
 		}
-	}
+	})
 }
