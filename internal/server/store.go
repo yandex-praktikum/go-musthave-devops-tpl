@@ -3,7 +3,7 @@ package server
 import (
 	"log"
 
-	"github.com/itd27m01/go-metrics-service/internal/repository"
+	"github.com/i1l-ba/go-devops/internal/repository"
 )
 
 func initStore(config *Config) (syncChannel chan struct{}) {
