@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/itd27m01/go-metrics-service/internal/pkg/metrics"
+	"github.com/i1l-ba/go-devops/internal/pkg/metrics"
 )
 
 const (
