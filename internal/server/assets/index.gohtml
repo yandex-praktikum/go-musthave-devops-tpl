@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+<table>
+    <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Value</th>
+    </tr>
+    {{ range $key, $value := . -}}
+    <tr>
+        <td style='text-align:center; vertical-align:middle'>{{ $value.MType }}</td>
+        <td style='text-align:center; vertical-align:middle'>{{ $key }}</td>
+        {{ if eq $value.MType "counter" -}}
+        <td style='text-align:center; vertical-align:middle'>{{ $value.Delta }}</td>
+        {{- else -}}
+        <td style='text-align:center; vertical-align:middle'>{{ $value.Value }}</td>
+        {{- end }}
+    </tr>
+    {{ end -}}
+</table>
+</body>
+</html>

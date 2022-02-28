@@ -2,6 +2,7 @@ package agent
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -19,10 +20,18 @@ type Monitor struct {
 	types string
 }
 
+type Metrics struct {
+	ID    string `json:"id"`              // имя метрики
+	MType string `json:"type"`            // параметр, принимающий значение gauge или counter
+	Delta uint64 `json:"delta,omitempty"` // значение метрики в случае передачи counter
+	Value string `json:"value,omitempty"` // значение метрики в случае передачи gauge
+}
+
 func NewMonitor(duration int64, ch chan int64, counter int64) {
 	//var m Monitor
 	//counter++
 	var rtm runtime.MemStats
+
 	//counter := 0
 	var interval = time.Duration(duration) * time.Second
 	//for {
@@ -70,21 +79,43 @@ func NewMonitor(duration int64, ch chan int64, counter int64) {
 			longurl := service.name + "/" + service.types + "/" + strconv.FormatUint(service.stats, 10)
 			endpoints := endpoint + longurl
 			long = strings.TrimSuffix(long, "\n")
+			//metric := []Metrics{}
+			if service.types == "gauge" {
+
+				metric := Metrics{
+					ID:    service.name,
+					MType: service.types,
+					Value: strconv.FormatUint(service.stats, 10),
+				}
+
+			} else {
+				metric := Metrics{
+					ID:    service.name,
+					MType: service.types,
+					Delta: service.stats,
+				}
+			}
+
+			json, err := json.Marshal(metric)
+			if err != nil {
+				panic(err)
+			}
+
 			// заполняем контейнер данными
-			data.Set("url", long)
+			//data.Set("url", long)
 			// конструируем HTTP-клиент
 			client := &http.Client{}
 			// конструируем запрос
 			// запрос методом POST должен, кроме заголовков, содержать тело
 			// тело должно быть источником потокового чтения io.Reader
 			// в большинстве случаев отлично подходит bytes.Buffer
-			request, err := http.NewRequest(http.MethodPost, endpoints, bytes.NewBufferString(data.Encode()))
+			request, err := http.NewRequest(http.MethodPost, endpoints, bytes.NewBuffer(json))
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
 			// в заголовках запроса сообщаем, что данные кодированы стандартной URL-схемой
-			request.Header.Add("Content-Type", "text/plain")
+			request.Header.Add("Content-Type", "application/json")
 			request.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 			// отправляем запрос и получаем ответ
 			response, err := client.Do(request)

@@ -1,47 +1,36 @@
 package main
 
 import (
+	"context"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
-	"test_go/internal/agent"
-	"time"
+
+	"github.com/caarlos0/env/v6"
+	"github.com/itd27m01/go-metrics-service/cmd/agent/cmd"
+	"github.com/itd27m01/go-metrics-service/internal/workers"
 )
 
-var cnt int64
-var addCounterChan chan int64
-
-//var readCounterChan chan int64
-
-//func AddCounter(ch chan int) {
-//	ch <- 1
-//}
-
 func main() {
-
-	//readCounterChan = make(chan int64, 100)
-
-	//Start reader
-	//go readApplicationLogs()
-	ticker := time.NewTicker(10 * time.Second)
-	defer ticker.Stop()
-	cnt = 1
-	for _ = range ticker.C {
-		addCounterChan = make(chan int64)
-		agent.NewMonitor(2, addCounterChan, cnt)
-
-		cnt = cnt + <-addCounterChan
-		//fmt.Println(cnt)
-		//var id int
-		//err := row.Scan(&id)
-
+	if err := cmd.Execute(); err != nil {
+		log.Fatalf("Failed to parse command line arguments: %q", err)
 	}
-	//Wait for exit
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	//<-sigs
-	log.Println("received", <-sigs)
-	//log.Info("Received kill signal")
-	//var tim
+
+	pollWorkerConfig := workers.PollerConfig{
+		PollInterval: cmd.PollInterval,
+	}
+	if err := env.Parse(&pollWorkerConfig); err != nil {
+		log.Fatal(err)
+	}
+
+	reportWorkerConfig := workers.ReporterConfig{
+		ServerScheme:   "http",
+		ServerAddress:  cmd.ServerAddress,
+		ServerPath:     "/update/",
+		ServerTimeout:  cmd.ServerTimeout,
+		ReportInterval: cmd.ReportInterval,
+	}
+	if err := env.Parse(&reportWorkerConfig); err != nil {
+		log.Fatal(err)
+	}
+
+	workers.Start(context.Background(), pollWorkerConfig, reportWorkerConfig)
 }

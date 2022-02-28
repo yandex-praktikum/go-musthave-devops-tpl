@@ -1,24 +1,30 @@
 package main
 
 import (
+	"context"
 	"log"
-	"net/http"
 
-	// важно: путь до пакета handlers в вашем случае может быть другим
-
-	"test_go/internal/router"
+	"github.com/caarlos0/env/v6"
+	"github.com/itd27m01/go-metrics-service/cmd/server/cmd"
+	"github.com/itd27m01/go-metrics-service/internal/server"
 )
 
 func main() {
-	//ds := router.newDataStore()
-
-	appRouter := router.New()
-
-	serv := &http.Server{
-		Addr:    ":8080",
-		Handler: appRouter,
+	if err := cmd.Execute(); err != nil {
+		log.Fatalf("Failed to parse command line arguments: %q", err)
 	}
-	//http.HandleFunc("/update/", handlers.StatusHandler)
-	//log.Fatal(http.ListenAndServe(":8080", nil))
-	log.Fatal(serv.ListenAndServe())
+
+	metricsServerConfig := server.Config{
+		ServerAddress: cmd.ServerAddress,
+		StoreInterval: cmd.StoreInterval,
+		Restore:       cmd.Restore,
+		StoreFilePath: cmd.StoreFilePath,
+	}
+	if err := env.Parse(&metricsServerConfig); err != nil {
+		log.Fatal(err)
+	}
+
+	metricsServer := server.MetricsServer{Cfg: &metricsServerConfig}
+
+	metricsServer.Start(context.Background())
 }

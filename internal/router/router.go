@@ -24,6 +24,11 @@ func newDataStore() DataStore {
 }
 
 //var m = map[string]float64{}
+var jsonData = []byte(`{
+	"name": "morpheus",
+	"job": "leader"
+}`)
+
 var m = map[string]int64{}
 var ds = newDataStore()
 
