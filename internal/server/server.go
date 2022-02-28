@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/itd27m01/go-metrics-service/internal/preserver"
-	"github.com/itd27m01/go-metrics-service/internal/repository"
+	"github.com/i1l-ba/go-devops/internal/preserver"
+	"github.com/i1l-ba/go-devops/internal/repository"
 )
 
 type Config struct {
