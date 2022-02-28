@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/caarlos0/env/v6"
-	"github.com/itd27m01/go-metrics-service/cmd/server/cmd"
-	"github.com/itd27m01/go-metrics-service/internal/server"
+	"github.com/i1l-ba/go-devops/cmd/server/cmd"
+	"github.com/i1l-ba/go-devops/internal/server"
 )
 
 func main() {
