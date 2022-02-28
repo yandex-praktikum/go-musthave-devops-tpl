@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/itd27m01/go-metrics-service/internal/repository"
+	"github.com/i1l-ba/go-devops/internal/repository"
 )
 
 type Preserver struct {
