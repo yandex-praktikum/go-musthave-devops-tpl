@@ -1,6 +1,8 @@
 package router
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"test_go/internal/handlers"
@@ -15,6 +17,13 @@ type Data struct {
 	types string
 }
 
+type Metrics struct {
+	ID    string  `json:"id"`              // имя метрики
+	MType string  `json:"type"`            // параметр, принимающий значение gauge или counter
+	Delta *uint64 `json:"delta,omitempty"` // значение метрики в случае передачи counter
+	Value string  `json:"value,omitempty"` // значение метрики в случае передачи gauge
+}
+
 type DataStore struct {
 	datastore map[string]Data
 }
@@ -24,6 +33,7 @@ func newDataStore() DataStore {
 }
 
 //var m = map[string]float64{}
+
 var m = map[string]int64{}
 var ds = newDataStore()
 
@@ -68,7 +78,13 @@ func New() chi.Router {
 			stats := chi.URLParam(r, "stats")
 			w.Write([]byte(name + "-" + tupe + "-" + stats))
 			ds.put(name, stats, tupe)
-			//w.Write([]byte(fmt.Sprintf("Query string values: %s", ds)))
+			var req Metrics
+			err := json.NewDecoder(r.Body).Decode(&req)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			w.Write([]byte(fmt.Sprintf(req)))
 			//return
 		})
 	})
