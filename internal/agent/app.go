@@ -3,6 +3,7 @@ package agent
 import (
 	"fmt"
 	"github.com/go-resty/resty/v2"
+	"metrics/internal/agent/config"
 	"metrics/internal/agent/requestHandler"
 	"metrics/internal/agent/statsReader"
 	"os"
@@ -32,10 +33,10 @@ func (app *AppHttp) Run() {
 	app.startTime = time.Now()
 	app.isRun = true
 
-	tickerStatisticsRefresh := time.NewTicker(configPollInterval * time.Second)
-	tickerStatisticsUpload := time.NewTicker(configReportInterval * time.Second)
+	tickerStatisticsRefresh := time.NewTicker(config.ConfigPollInterval * time.Second)
+	tickerStatisticsUpload := time.NewTicker(config.ConfigReportInterval * time.Second)
 
-	for {
+	for app.isRun {
 		select {
 		case timeTickerRefresh := <-tickerStatisticsRefresh.C:
 			fmt.Println("Refresh")
@@ -45,7 +46,7 @@ func (app *AppHttp) Run() {
 			app.lastUploadTime = timeTickerUpload
 			fmt.Println("Upload")
 
-			err := requestHandler.MemoryStatsUpload(memStatistics)
+			err := requestHandler.MemoryStatsUpload(app.client, memStatistics)
 			if err != nil {
 				app.Stop()
 			}
