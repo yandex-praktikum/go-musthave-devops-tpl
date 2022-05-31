@@ -18,7 +18,7 @@ func oneStatUpload(httpClient *resty.Client, errorChan chan error, statType stri
 			"type":  statType,
 			"name":  statName,
 			"value": statValue,
-		}).Get("http://{host}:{port}/update/{type}/{name}/{value}")
+		}).Post("http://{host}:{port}/update/{type}/{name}/{value}")
 
 	if err != nil {
 		fmt.Println(err)
