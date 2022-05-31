@@ -25,7 +25,7 @@ func initRouter() chi.Router {
 
 	// создадим суброутер, который будет содержать две функции
 	router.Route("/update", func(router chi.Router) {
-		router.Get("/gauge/{statName}/{statValue}", func(rw http.ResponseWriter, request *http.Request) {
+		router.Post("/gauge/{statName}/{statValue}", func(rw http.ResponseWriter, request *http.Request) {
 			statName := chi.URLParam(request, "statName")
 			statValue := chi.URLParam(request, "statName")
 			fmt.Println("Update gauge:")
@@ -33,7 +33,8 @@ func initRouter() chi.Router {
 
 			rw.Write([]byte(" "))
 		})
-		router.Get("/counter/{statName}/{statValue}", func(rw http.ResponseWriter, request *http.Request) {
+
+		router.Post("/counter/{statName}/{statValue}", func(rw http.ResponseWriter, request *http.Request) {
 			statName := chi.URLParam(request, "statName")
 			statValue := chi.URLParam(request, "statName")
 			fmt.Println("Update gauge:")
