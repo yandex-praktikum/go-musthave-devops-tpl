@@ -93,6 +93,11 @@ func NewMemStatsMemoryRepo() MemStatsMemoryRepo {
 }
 
 func (memStatsStorage MemStatsMemoryRepo) UpdateGaugeValue(key string, value float64) error {
+	_, err := memStatsStorage.storage.Read(key)
+	if err != nil {
+		return errors.New("MemStat key not found")
+	}
+
 	return memStatsStorage.storage.Write(key, fmt.Sprintf("%v", value))
 }
 
