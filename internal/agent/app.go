@@ -25,11 +25,22 @@ type AppHttp struct {
 	client          *resty.Client
 }
 
+func (app *AppHttp) initHttpClient() {
+	client := resty.New()
+
+	client.
+		SetRetryCount(config.ConfigClientRetryCount).
+		SetRetryWaitTime(config.ConfigClientRetryWaitTime).
+		SetRetryMaxWaitTime(config.ConfigClientRetryMaxWaitTime)
+
+	app.client = client
+}
+
 func (app *AppHttp) Run() {
 	var memStatistics statsReader.MemoryStatsDump
 	signalChanel := make(chan os.Signal, 1)
 
-	app.client = resty.New()
+	app.initHttpClient()
 	app.startTime = time.Now()
 	app.isRun = true
 

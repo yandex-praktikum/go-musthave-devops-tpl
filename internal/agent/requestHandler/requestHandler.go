@@ -11,13 +11,14 @@ import (
 )
 
 func oneStatUpload(httpClient *resty.Client, errorChan chan error, statType string, statName string, statValue string) {
-	resp, err := httpClient.R().SetPathParams(map[string]string{
-		"host":  config.ConfigServerHost,
-		"port":  fmt.Sprintf("%v", config.ConfigServerPort),
-		"type":  statType,
-		"name":  statName,
-		"value": statValue,
-	}).Get("http://{host}:{port}/update/{type}/{name}/{value}")
+	resp, err := httpClient.R().
+		SetPathParams(map[string]string{
+			"host":  config.ConfigServerHost,
+			"port":  fmt.Sprintf("%v", config.ConfigServerPort),
+			"type":  statType,
+			"name":  statName,
+			"value": statValue,
+		}).Get("http://{host}:{port}/update/{type}/{name}/{value}")
 
 	if err != nil {
 		fmt.Println(err)
