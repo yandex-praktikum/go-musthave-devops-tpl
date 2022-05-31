@@ -59,6 +59,9 @@ func (app *AppHttp) Run() {
 
 			err := requestHandler.MemoryStatsUpload(app.client, memStatistics)
 			if err != nil {
+				fmt.Println("Error!")
+				fmt.Println(err)
+
 				app.Stop()
 			}
 		case osSignal := <-signalChanel:
