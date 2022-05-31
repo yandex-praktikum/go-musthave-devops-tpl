@@ -109,3 +109,7 @@ func (memStatsStorage MemStatsMemoryRepo) UpdateCounterValue(key string, value i
 
 	return nil
 }
+
+func (memStatsStorage MemStatsMemoryRepo) ReadValue(key string) (string, error) {
+	return memStatsStorage.storage.Read(key)
+}
