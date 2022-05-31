@@ -1,6 +1,13 @@
 package storage
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+	"strconv"
+)
+
+type Gauge float64
+type Counter int64
 
 type Storager interface {
 	Write(key, value string) error
@@ -30,4 +37,75 @@ func (m MemoryRepo) Read(key string) (string, error) {
 	}
 
 	return value, nil
+}
+
+//MemStatsMemoryRepo - репо для приходящей статистики
+type MemStatsMemoryRepo struct {
+	storage Storager
+}
+
+//Создание MemStatsMemoryRepo с дефолтными значениями
+func NewMemStatsMemoryRepo() MemStatsMemoryRepo {
+	var memStatsStorage MemStatsMemoryRepo
+	memStatsStorage.storage = NewMemoryRepo()
+
+	memStatsStorage.storage.Write("Alloc", "0")
+	memStatsStorage.storage.Write("BuckHashSys", "0")
+	memStatsStorage.storage.Write("Frees", "0")
+	memStatsStorage.storage.Write("GCCPUFraction", "0")
+	memStatsStorage.storage.Write("GCSys", "0")
+
+	memStatsStorage.storage.Write("HeapAlloc", "0")
+	memStatsStorage.storage.Write("HeapIdle", "0")
+	memStatsStorage.storage.Write("HeapInuse", "0")
+	memStatsStorage.storage.Write("HeapObjects", "0")
+	memStatsStorage.storage.Write("HeapReleased", "0")
+
+	memStatsStorage.storage.Write("HeapSys", "0")
+	memStatsStorage.storage.Write("LastGC", "0")
+	memStatsStorage.storage.Write("Lookups", "0")
+	memStatsStorage.storage.Write("MCacheInuse", "0")
+	memStatsStorage.storage.Write("MCacheSys", "0")
+
+	memStatsStorage.storage.Write("MSpanInuse", "0")
+	memStatsStorage.storage.Write("MSpanSys", "0")
+	memStatsStorage.storage.Write("Mallocs", "0")
+	memStatsStorage.storage.Write("NextGC", "0")
+	memStatsStorage.storage.Write("NumForcedGC", "0")
+
+	memStatsStorage.storage.Write("NumGC", "0")
+	memStatsStorage.storage.Write("OtherSys", "0")
+	memStatsStorage.storage.Write("PauseTotalNs", "0")
+	memStatsStorage.storage.Write("StackInuse", "0")
+	memStatsStorage.storage.Write("StackSys", "0")
+
+	memStatsStorage.storage.Write("Sys", "0")
+	memStatsStorage.storage.Write("TotalAlloc", "0")
+	memStatsStorage.storage.Write("PollCount", "0")
+	memStatsStorage.storage.Write("RandomValue", "0")
+
+	return memStatsStorage
+}
+
+func (memStatsStorage MemStatsMemoryRepo) UpdateGaugeValue(key string, value float64) error {
+	return memStatsStorage.storage.Write(key, fmt.Sprintf("%v", value))
+}
+
+func (memStatsStorage MemStatsMemoryRepo) UpdateCounterValue(key string, value int64) error {
+	//Чтение старого значения
+	oldValue, err := memStatsStorage.storage.Read(key)
+	if err != nil {
+		return errors.New("MemStat key not found")
+	}
+
+	//Конвертация в число
+	oldValueInt, err := strconv.ParseInt(oldValue, 10, 64)
+	if err != nil {
+		return errors.New("MemStats value is not int64")
+	}
+
+	newValue := fmt.Sprintf("%v", oldValueInt+value)
+	memStatsStorage.storage.Write(key, newValue)
+
+	return nil
 }
