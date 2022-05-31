@@ -12,6 +12,7 @@ type Counter int64
 type Storager interface {
 	Write(key, value string) error
 	Read(key string) (string, error)
+	GetSchemaDump() map[string]string
 }
 
 // MemoryRepo структура
@@ -37,6 +38,10 @@ func (m MemoryRepo) Read(key string) (string, error) {
 	}
 
 	return value, nil
+}
+
+func (m MemoryRepo) GetSchemaDump() map[string]string {
+	return m.db
 }
 
 //MemStatsMemoryRepo - репо для приходящей статистики
@@ -112,4 +117,8 @@ func (memStatsStorage MemStatsMemoryRepo) UpdateCounterValue(key string, value i
 
 func (memStatsStorage MemStatsMemoryRepo) ReadValue(key string) (string, error) {
 	return memStatsStorage.storage.Read(key)
+}
+
+func (memStatsStorage MemStatsMemoryRepo) GetDbSchema() map[string]string {
+	return memStatsStorage.storage.GetSchemaDump()
 }

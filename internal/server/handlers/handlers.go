@@ -53,3 +53,24 @@ func UpdateCounterPost(rw http.ResponseWriter, request *http.Request, memStatsSt
 	rw.WriteHeader(http.StatusOK)
 	rw.Write([]byte("Ok"))
 }
+
+func PrintStatsValues(rw http.ResponseWriter, request *http.Request, memStatsStorage storage.MemStatsMemoryRepo) {
+	htmlTemplate := `
+<html>
+    <head>
+    <title></title>
+    </head>
+    <body>
+        %v
+    </body>
+</html>`
+	keyValuesHtml := ""
+
+	for k, v := range memStatsStorage.GetDbSchema() {
+		keyValuesHtml += fmt.Sprintf("<div><b>%v</b>: %v</div>", k, v)
+	}
+
+	htmlPage := fmt.Sprintf(htmlTemplate, keyValuesHtml)
+	rw.WriteHeader(http.StatusOK)
+	rw.Write([]byte(htmlPage))
+}

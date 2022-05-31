@@ -25,6 +25,11 @@ func initRouter(memStatsStorage storage.MemStatsMemoryRepo) chi.Router {
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 
+	//Маршруты
+	router.Get("/", func(writer http.ResponseWriter, request *http.Request) {
+		handlers.PrintStatsValues(writer, request, memStatsStorage)
+	})
+
 	router.Route("/update", func(router chi.Router) {
 		//Решил не делать 1 универсальный хэндлер, т.к. возможно в будущем будет разница
 		//В обработке gauge и counter
