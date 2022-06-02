@@ -12,6 +12,24 @@ import (
 var cnt int64
 var addCounterChan chan int64
 
+func readApplicationLogs() {
+
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+	addCounterChan = make(chan int64)
+	//readCounterChan = make(chan int64, 1000000)
+	cnt = 0
+	for _ = range ticker.C {
+
+		agent.NewMonitor(2, addCounterChan, cnt)
+		cnt = cnt + <-addCounterChan
+		//var id int
+		//err := row.Scan(&id)
+
+	}
+}
+
+//var addCounterChan chan int64
 //var readCounterChan chan int64
 
 //func AddCounter(ch chan int) {
@@ -19,24 +37,9 @@ var addCounterChan chan int64
 //}
 
 func main() {
-
-	//readCounterChan = make(chan int64, 100)
-
+	//addCounterChan = make(chan int64)
 	//Start reader
-	//go readApplicationLogs()
-	ticker := time.NewTicker(10 * time.Second)
-	defer ticker.Stop()
-	cnt = 1
-	for _ = range ticker.C {
-		addCounterChan = make(chan int64)
-		agent.NewMonitor(2, addCounterChan, cnt)
-
-		cnt = cnt + <-addCounterChan
-		//fmt.Println(cnt)
-		//var id int
-		//err := row.Scan(&id)
-
-	}
+	readApplicationLogs()
 	//Wait for exit
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
