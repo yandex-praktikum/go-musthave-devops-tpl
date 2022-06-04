@@ -24,7 +24,8 @@ type MemoryRepo struct {
 
 func NewMemoryRepo() *MemoryRepo {
 	return &MemoryRepo{
-		db: make(map[string]string),
+		db:      make(map[string]string),
+		RWMutex: &sync.RWMutex{},
 	}
 }
 
