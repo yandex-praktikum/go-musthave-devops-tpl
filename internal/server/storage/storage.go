@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"sync"
 )
 
 type Gauge float64
@@ -18,20 +19,25 @@ type Storager interface {
 // MemoryRepo структура
 type MemoryRepo struct {
 	db map[string]string
+	*sync.RWMutex
 }
 
-func NewMemoryRepo() MemoryRepo {
-	return MemoryRepo{
+func NewMemoryRepo() *MemoryRepo {
+	return &MemoryRepo{
 		db: make(map[string]string),
 	}
 }
 
 func (m MemoryRepo) Write(key, value string) error {
+	m.Lock()
+	defer m.Unlock()
 	m.db[key] = value
 	return nil
 }
 
 func (m MemoryRepo) Read(key string) (string, error) {
+	m.RLock()
+	defer m.RUnlock()
 	value, err := m.db[key]
 	if !err {
 		return "", errors.New("Значение по ключу не найдено, ключ: " + key)
