@@ -31,8 +31,6 @@ func initRouter(memStatsStorage storage.MemStatsMemoryRepo) chi.Router {
 	})
 
 	router.Route("/update", func(router chi.Router) {
-		//Решил не делать 1 универсальный хэндлер, т.к. возможно в будущем будет разница
-		//В обработке gauge и counter
 		router.Post("/gauge/{statName}/{statValue}", func(writer http.ResponseWriter, request *http.Request) {
 			handlers.UpdateGaugePost(writer, request, memStatsStorage)
 		})

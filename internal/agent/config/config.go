@@ -2,8 +2,6 @@ package config
 
 import "time"
 
-//Не нашел сразу решение как сделать const/readonly структуру или мапу, по этому пока только так...
-//Потом сделаю иначе
 const (
 	ConfigClientRetryCount       = 3
 	ConfigClientRetryWaitTime    = 10 * time.Second

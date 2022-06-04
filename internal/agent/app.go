@@ -11,12 +11,6 @@ import (
 	"time"
 )
 
-type AppRunner interface {
-	Run()
-	Stop()
-	IsRun() bool
-}
-
 type AppHttp struct {
 	isRun           bool
 	startTime       time.Time
