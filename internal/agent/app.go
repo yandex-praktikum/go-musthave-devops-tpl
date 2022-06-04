@@ -74,7 +74,6 @@ func (app *AppHttp) Run() {
 
 func (app *AppHttp) Stop() {
 	app.isRun = false
-	os.Exit(1)
 }
 
 func (app *AppHttp) IsRun() bool {
