@@ -24,7 +24,6 @@ func oneStatUpload(httpClient *resty.Client, statType string, statName string, s
 		Post("http://{host}:{port}/update/{type}/{name}/{value}")
 
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 	if resp.StatusCode() != 200 {

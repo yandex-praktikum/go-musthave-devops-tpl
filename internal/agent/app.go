@@ -1,8 +1,8 @@
 package agent
 
 import (
-	"fmt"
 	"github.com/go-resty/resty/v2"
+	"log"
 	"metrics/internal/agent/config"
 	"metrics/internal/agent/requestHandler"
 	"metrics/internal/agent/statsReader"
@@ -44,28 +44,28 @@ func (app *AppHttp) Run() {
 	for app.isRun {
 		select {
 		case timeTickerRefresh := <-tickerStatisticsRefresh.C:
-			fmt.Println("Refresh")
+			log.Println("Refresh")
 			app.lastRefreshTime = timeTickerRefresh
 			memStatistics.Refresh()
 		case timeTickerUpload := <-tickerStatisticsUpload.C:
 			app.lastUploadTime = timeTickerUpload
-			fmt.Println("Upload")
+			log.Println("Upload")
 
 			err := requestHandler.MemoryStatsUpload(app.client, memStatistics)
 			if err != nil {
-				fmt.Println("Error!")
-				fmt.Println(err)
+				log.Println("Error!")
+				log.Println(err)
 
 				app.Stop()
 			}
 		case osSignal := <-signalChanel:
 			switch osSignal {
 			case syscall.SIGTERM:
-				fmt.Println("syscall: SIGTERM")
+				log.Println("syscall: SIGTERM")
 			case syscall.SIGINT:
-				fmt.Println("syscall: SIGINT")
+				log.Println("syscall: SIGINT")
 			case syscall.SIGQUIT:
-				fmt.Println("syscall: SIGQUIT")
+				log.Println("syscall: SIGQUIT")
 			}
 			app.Stop()
 		}

@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"github.com/go-chi/chi"
+	"log"
 	"metrics/internal/server/storage"
 	"net/http"
 	"strconv"
@@ -34,8 +35,8 @@ func UpdateGaugePost(rw http.ResponseWriter, request *http.Request, memStatsStor
 		return
 	}
 
-	fmt.Println("Update gauge:")
-	fmt.Printf("%v: %v\n\n", statName, statValue)
+	log.Println("Update gauge:")
+	log.Printf("%v: %v\n", statName, statValue)
 	rw.WriteHeader(http.StatusOK)
 	rw.Write([]byte("Ok"))
 }
@@ -65,8 +66,8 @@ func UpdateCounterPost(rw http.ResponseWriter, request *http.Request, memStatsSt
 		return
 	}
 
-	fmt.Println("Inc counter:")
-	fmt.Printf("%v: %v", statName, statValue)
+	log.Println("Inc counter:")
+	log.Printf("%v: %v\n", statName, statValue)
 	rw.WriteHeader(http.StatusOK)
 	rw.Write([]byte("Ok"))
 }
