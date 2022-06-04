@@ -11,8 +11,10 @@ type Gauge float64
 type Counter int64
 
 type Storager interface {
+	Len() int
 	Write(key, value string) error
 	Read(key string) (string, error)
+	Delete(key string) (string, bool)
 	GetSchemaDump() map[string]string
 }
 
@@ -29,11 +31,27 @@ func NewMemoryRepo() *MemoryRepo {
 	}
 }
 
+func (m *MemoryRepo) Len() int {
+	m.RLock()
+	defer m.RUnlock()
+	return len(m.db)
+}
+
 func (m MemoryRepo) Write(key, value string) error {
 	m.Lock()
 	defer m.Unlock()
 	m.db[key] = value
 	return nil
+}
+
+func (m *MemoryRepo) Delete(key string) (string, bool) {
+	m.Lock()
+	defer m.Unlock()
+	old_value, ok := m.db[key]
+	if ok {
+		delete(m.db, key)
+	}
+	return old_value, ok
 }
 
 func (m MemoryRepo) Read(key string) (string, error) {
