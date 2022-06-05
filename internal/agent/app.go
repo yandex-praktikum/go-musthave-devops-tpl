@@ -1,14 +1,15 @@
 package agent
 
 import (
-	"github.com/go-resty/resty/v2"
 	"log"
-	"metrics/internal/agent/config"
-	"metrics/internal/agent/requestHandler"
-	"metrics/internal/agent/statsReader"
 	"os"
 	"syscall"
 	"time"
+
+	"github.com/go-resty/resty/v2"
+	"metrics/internal/agent/config"
+	"metrics/internal/agent/requestHandler"
+	"metrics/internal/agent/statsReader"
 )
 
 type AppHttp struct {

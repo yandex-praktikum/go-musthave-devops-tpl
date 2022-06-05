@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/go-chi/chi"
 	"log"
-	"metrics/internal/server/storage"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/go-chi/chi"
+	"metrics/internal/server/storage"
 )
 
 func UpdateGaugePost(rw http.ResponseWriter, request *http.Request, memStatsStorage storage.MemStatsMemoryRepo) {

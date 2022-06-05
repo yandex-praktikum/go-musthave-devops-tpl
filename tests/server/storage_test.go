@@ -1,9 +1,10 @@
 package server
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/require"
 	"metrics/internal/server/storage"
-	"testing"
 )
 
 func TestMemoryRepoRW(t *testing.T) {

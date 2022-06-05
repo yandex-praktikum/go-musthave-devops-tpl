@@ -3,12 +3,13 @@ package requestHandler
 import (
 	"errors"
 	"fmt"
+	"reflect"
+	"strings"
+
 	"github.com/go-resty/resty/v2"
 	"golang.org/x/sync/errgroup"
 	"metrics/internal/agent/config"
 	"metrics/internal/agent/statsReader"
-	"reflect"
-	"strings"
 )
 
 func oneStatUpload(httpClient *resty.Client, statType string, statName string, statValue string) error {

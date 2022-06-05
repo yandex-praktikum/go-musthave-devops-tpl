@@ -2,14 +2,15 @@ package server
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"time"
+
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"log"
 	"metrics/internal/server/config"
 	"metrics/internal/server/handlers"
 	"metrics/internal/server/storage"
-	"net/http"
-	"time"
 )
 
 type Server struct {

@@ -1,9 +1,10 @@
 package agent
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"metrics/internal/agent/statsReader"
-	"testing"
 )
 
 func TestRefresh(t *testing.T) {
