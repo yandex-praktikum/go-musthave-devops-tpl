@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"strconv"
 	"strings"
 
 	"github.com/go-resty/resty/v2"
@@ -17,7 +16,7 @@ func oneStatUpload(httpClient *resty.Client, statType string, statName string, s
 	resp, err := httpClient.R().
 		SetPathParams(map[string]string{
 			"host":  config.ConfigServerHost,
-			"port":  strconv.Itoa(config.ConfigServerPort),
+			"port":  fmt.Sprintf("%v", config.ConfigServerPort),
 			"type":  statType,
 			"name":  statName,
 			"value": statValue,
