@@ -69,6 +69,7 @@ func PrintStatsValues(rw http.ResponseWriter, request *http.Request, memStatsSto
     <title></title>
     </head>
     <body>
+		<h3 class="keyvalues-header">All values: </h3>
         %v
     </body>
 </html>`
