@@ -20,7 +20,8 @@ type AppHTTP struct {
 	client          *resty.Client
 }
 
-func (app *AppHTTP) initHTTPClient() {
+func NewHTTPClient() *AppHTTP {
+	var app AppHTTP
 	client := resty.New()
 
 	client.
@@ -29,13 +30,13 @@ func (app *AppHTTP) initHTTPClient() {
 		SetRetryMaxWaitTime(config.ConfigClientRetryMaxWaitTime)
 
 	app.client = client
+	return &app
 }
 
 func (app *AppHTTP) Run() {
 	var memStatistics statsreader.MemoryStatsDump
 	signalChanel := make(chan os.Signal, 1)
 
-	app.initHTTPClient()
 	app.startTime = time.Now()
 	app.isRun = true
 

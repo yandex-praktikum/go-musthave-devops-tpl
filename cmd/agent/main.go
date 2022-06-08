@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	var app agent.AppHTTP
+	app := agent.NewHTTPClient()
 	app.Run()
 }
