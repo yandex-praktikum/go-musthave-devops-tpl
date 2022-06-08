@@ -1,14 +1,13 @@
-package server
+package storage
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"metrics/internal/server/storage"
 )
 
 func TestMemoryRepoRW(t *testing.T) {
-	memoryRepo := storage.NewMemoryRepo()
+	memoryRepo := NewMemoryRepo()
 
 	usernameExpect := "Efim"
 	memoryRepo.Write("username", usernameExpect)
@@ -19,7 +18,7 @@ func TestMemoryRepoRW(t *testing.T) {
 }
 
 func TestMemoryRepoReadEmpty(t *testing.T) {
-	memoryRepo := storage.NewMemoryRepo()
+	memoryRepo := NewMemoryRepo()
 
 	_, err := memoryRepo.Read("username")
 
@@ -27,7 +26,7 @@ func TestMemoryRepoReadEmpty(t *testing.T) {
 }
 
 func TestUpdateCounterValue(t *testing.T) {
-	memStatsStorage := storage.NewMemStatsMemoryRepo()
+	memStatsStorage := NewMemStatsMemoryRepo()
 
 	err := memStatsStorage.UpdateCounterValue("PollCount", 7)
 	require.NoError(t, err)

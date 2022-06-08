@@ -1,14 +1,13 @@
-package agent
+package statsReader
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"metrics/internal/agent/statsReader"
 )
 
 func TestRefresh(t *testing.T) {
-	var memStatistics statsReader.MemoryStatsDump
+	var memStatistics MemoryStatsDump
 	memStatistics.Refresh()
 	memStatistics.Refresh()
 	memStatistics.Refresh()
