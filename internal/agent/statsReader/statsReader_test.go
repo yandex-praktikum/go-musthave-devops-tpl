@@ -1,4 +1,4 @@
-package statsReader
+package statsreader
 
 import (
 	"testing"

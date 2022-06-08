@@ -8,11 +8,11 @@ import (
 
 	"github.com/go-resty/resty/v2"
 	"metrics/internal/agent/config"
-	"metrics/internal/agent/requestHandler"
-	"metrics/internal/agent/statsReader"
+	"metrics/internal/agent/requesthandler"
+	"metrics/internal/agent/statsreader"
 )
 
-type AppHttp struct {
+type AppHTTP struct {
 	isRun           bool
 	startTime       time.Time
 	lastRefreshTime time.Time
@@ -20,7 +20,7 @@ type AppHttp struct {
 	client          *resty.Client
 }
 
-func (app *AppHttp) initHttpClient() {
+func (app *AppHTTP) initHTTPClient() {
 	client := resty.New()
 
 	client.
@@ -31,11 +31,11 @@ func (app *AppHttp) initHttpClient() {
 	app.client = client
 }
 
-func (app *AppHttp) Run() {
-	var memStatistics statsReader.MemoryStatsDump
+func (app *AppHTTP) Run() {
+	var memStatistics statsreader.MemoryStatsDump
 	signalChanel := make(chan os.Signal, 1)
 
-	app.initHttpClient()
+	app.initHTTPClient()
 	app.startTime = time.Now()
 	app.isRun = true
 
@@ -52,7 +52,7 @@ func (app *AppHttp) Run() {
 			app.lastUploadTime = timeTickerUpload
 			log.Println("Upload")
 
-			err := requestHandler.MemoryStatsUpload(app.client, memStatistics)
+			err := requesthandler.MemoryStatsUpload(app.client, memStatistics)
 			if err != nil {
 				log.Println("Error!")
 				log.Println(err)
@@ -73,10 +73,10 @@ func (app *AppHttp) Run() {
 	}
 }
 
-func (app *AppHttp) Stop() {
+func (app *AppHTTP) Stop() {
 	app.isRun = false
 }
 
-func (app *AppHttp) IsRun() bool {
+func (app *AppHTTP) IsRun() bool {
 	return app.isRun
 }

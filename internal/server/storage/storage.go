@@ -47,11 +47,11 @@ func (m MemoryRepo) Write(key, value string) error {
 func (m *MemoryRepo) Delete(key string) (string, bool) {
 	m.Lock()
 	defer m.Unlock()
-	old_value, ok := m.db[key]
+	oldValue, ok := m.db[key]
 	if ok {
 		delete(m.db, key)
 	}
-	return old_value, ok
+	return oldValue, ok
 }
 
 func (m MemoryRepo) Read(key string) (string, error) {
@@ -144,6 +144,6 @@ func (memStatsStorage MemStatsMemoryRepo) ReadValue(key string) (string, error) 
 	return memStatsStorage.storage.Read(key)
 }
 
-func (memStatsStorage MemStatsMemoryRepo) GetDbSchema() map[string]string {
+func (memStatsStorage MemStatsMemoryRepo) GetDBSchema() map[string]string {
 	return memStatsStorage.storage.GetSchemaDump()
 }

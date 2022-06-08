@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	var app agent.AppHttp
+	var app agent.AppHTTP
 	app.Run()
 }

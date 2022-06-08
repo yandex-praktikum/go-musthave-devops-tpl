@@ -72,13 +72,13 @@ func PrintStatsValues(rw http.ResponseWriter, request *http.Request, memStatsSto
         %v
     </body>
 </html>`
-	keyValuesHtml := ""
+	keyValuesHTML := ""
 
-	for k, v := range memStatsStorage.GetDbSchema() {
-		keyValuesHtml += fmt.Sprintf("<div><b>%v</b>: %v</div>", k, v)
+	for k, v := range memStatsStorage.GetDBSchema() {
+		keyValuesHTML += fmt.Sprintf("<div><b>%v</b>: %v</div>", k, v)
 	}
 
-	htmlPage := fmt.Sprintf(htmlTemplate, keyValuesHtml)
+	htmlPage := fmt.Sprintf(htmlTemplate, keyValuesHTML)
 	rw.WriteHeader(http.StatusOK)
 	rw.Write([]byte(htmlPage))
 }
@@ -87,8 +87,8 @@ func PrintStatValue(rw http.ResponseWriter, request *http.Request, memStatsStora
 	statName := chi.URLParam(request, "statName")
 	statValue, err := memStatsStorage.ReadValue(statName)
 	if err != nil {
-		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte("Server error"))
+		rw.WriteHeader(http.StatusNotFound)
+		rw.Write([]byte("Unknown statName"))
 	}
 
 	rw.WriteHeader(http.StatusOK)

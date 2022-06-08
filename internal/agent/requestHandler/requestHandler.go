@@ -1,4 +1,4 @@
-package requestHandler
+package requesthandler
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 	"github.com/go-resty/resty/v2"
 	"golang.org/x/sync/errgroup"
 	"metrics/internal/agent/config"
-	"metrics/internal/agent/statsReader"
+	"metrics/internal/agent/statsreader"
 )
 
 func oneStatUpload(httpClient *resty.Client, statType string, statName string, statValue string) error {
@@ -34,7 +34,7 @@ func oneStatUpload(httpClient *resty.Client, statType string, statName string, s
 	return nil
 }
 
-func MemoryStatsUpload(httpClient *resty.Client, memoryStats statsReader.MemoryStatsDump) error {
+func MemoryStatsUpload(httpClient *resty.Client, memoryStats statsreader.MemoryStatsDump) error {
 	reflectMemoryStats := reflect.ValueOf(memoryStats)
 	typeOfMemoryStats := reflectMemoryStats.Type()
 	errorGroup := new(errgroup.Group)
