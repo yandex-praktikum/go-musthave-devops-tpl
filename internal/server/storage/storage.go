@@ -118,11 +118,6 @@ func NewMemStatsMemoryRepo() MemStatsMemoryRepo {
 }
 
 func (memStatsStorage MemStatsMemoryRepo) UpdateGaugeValue(key string, value float64) error {
-	_, err := memStatsStorage.storage.Read(key)
-	if err != nil {
-		return errors.New("MemStat key not found")
-	}
-
 	return memStatsStorage.storage.Write(key, fmt.Sprintf("%v", value))
 }
 
@@ -130,7 +125,7 @@ func (memStatsStorage MemStatsMemoryRepo) UpdateCounterValue(key string, value i
 	//Чтение старого значения
 	oldValue, err := memStatsStorage.storage.Read(key)
 	if err != nil {
-		return errors.New("MemStat key not found")
+		oldValue = "0"
 	}
 
 	//Конвертация в число

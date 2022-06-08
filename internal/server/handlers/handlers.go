@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/go-chi/chi"
 	"metrics/internal/server/storage"
@@ -22,14 +21,6 @@ func UpdateGaugePost(rw http.ResponseWriter, request *http.Request, memStatsStor
 	}
 
 	err = memStatsStorage.UpdateGaugeValue(statName, statValueInt)
-	//если ключ не найден
-	if strings.Contains(fmt.Sprint(err), "MemStat key not found") {
-		rw.WriteHeader(http.StatusNotFound)
-		rw.Write([]byte("Not found"))
-		return
-	}
-
-	//если другая ошибка
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("Server error"))
@@ -53,14 +44,6 @@ func UpdateCounterPost(rw http.ResponseWriter, request *http.Request, memStatsSt
 	}
 
 	err = memStatsStorage.UpdateCounterValue(statName, statCounterValue)
-	//если ключ не найден
-	if strings.Contains(fmt.Sprint(err), "MemStat key not found") {
-		rw.WriteHeader(http.StatusNotFound)
-		rw.Write([]byte("Not found"))
-		return
-	}
-
-	//если другая ошибка
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte(err.Error()))
