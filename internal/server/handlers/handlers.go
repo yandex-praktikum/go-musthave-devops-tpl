@@ -82,3 +82,15 @@ func PrintStatsValues(rw http.ResponseWriter, request *http.Request, memStatsSto
 	rw.WriteHeader(http.StatusOK)
 	rw.Write([]byte(htmlPage))
 }
+
+func PrintStatValue(rw http.ResponseWriter, request *http.Request, memStatsStorage storage.MemStatsMemoryRepo) {
+	statName := chi.URLParam(request, "statName")
+	statValue, err := memStatsStorage.ReadValue(statName)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		rw.Write([]byte("Server error"))
+	}
+
+	rw.WriteHeader(http.StatusOK)
+	rw.Write([]byte(statValue))
+}

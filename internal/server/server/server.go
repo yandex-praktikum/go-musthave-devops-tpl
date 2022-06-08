@@ -31,14 +31,18 @@ func newRouter(memStatsStorage storage.MemStatsMemoryRepo) chi.Router {
 		handlers.PrintStatsValues(writer, request, memStatsStorage)
 	})
 
+	router.Get("/value/{statType}/{statName}", func(writer http.ResponseWriter, request *http.Request) {
+		handlers.PrintStatValue(writer, request, memStatsStorage)
+	})
+
 	router.Route("/update", func(router chi.Router) {
-		router.Get("/gauge/{statName}/{statValue}", func(writer http.ResponseWriter, request *http.Request) {
+		router.Post("/gauge/{statName}/{statValue}", func(writer http.ResponseWriter, request *http.Request) {
 			handlers.UpdateGaugePost(writer, request, memStatsStorage)
 		})
-		router.Get("/counter/{statName}/{statValue}", func(writer http.ResponseWriter, request *http.Request) {
+		router.Post("/counter/{statName}/{statValue}", func(writer http.ResponseWriter, request *http.Request) {
 			handlers.UpdateCounterPost(writer, request, memStatsStorage)
 		})
-		router.Get("/{statType}/{statName}/{statValue}", func(writer http.ResponseWriter, request *http.Request) {
+		router.Post("/{statType}/{statName}/{statValue}", func(writer http.ResponseWriter, request *http.Request) {
 			handlers.UpdateNotImplementedPost(writer, request)
 		})
 	})
