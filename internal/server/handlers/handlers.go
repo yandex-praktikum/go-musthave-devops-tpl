@@ -56,6 +56,12 @@ func UpdateCounterPost(rw http.ResponseWriter, request *http.Request, memStatsSt
 	rw.Write([]byte("Ok"))
 }
 
+func UpdateNotImplementedPost(rw http.ResponseWriter, request *http.Request) {
+	log.Println("Update not implemented statType")
+	rw.WriteHeader(http.StatusNotImplemented)
+	rw.Write([]byte("Not implemented"))
+}
+
 func PrintStatsValues(rw http.ResponseWriter, request *http.Request, memStatsStorage storage.MemStatsMemoryRepo) {
 	htmlTemplate := `
 <html>

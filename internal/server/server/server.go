@@ -32,11 +32,14 @@ func newRouter(memStatsStorage storage.MemStatsMemoryRepo) chi.Router {
 	})
 
 	router.Route("/update", func(router chi.Router) {
-		router.Post("/gauge/{statName}/{statValue}", func(writer http.ResponseWriter, request *http.Request) {
+		router.Get("/gauge/{statName}/{statValue}", func(writer http.ResponseWriter, request *http.Request) {
 			handlers.UpdateGaugePost(writer, request, memStatsStorage)
 		})
-		router.Post("/counter/{statName}/{statValue}", func(writer http.ResponseWriter, request *http.Request) {
+		router.Get("/counter/{statName}/{statValue}", func(writer http.ResponseWriter, request *http.Request) {
 			handlers.UpdateCounterPost(writer, request, memStatsStorage)
+		})
+		router.Get("/{statType}/{statName}/{statValue}", func(writer http.ResponseWriter, request *http.Request) {
+			handlers.UpdateNotImplementedPost(writer, request)
 		})
 	})
 
