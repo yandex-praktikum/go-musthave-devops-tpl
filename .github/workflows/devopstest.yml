@@ -28,6 +28,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Branch name
+        env:
+          BRANCH_NAME: $GITHUB_REF
+        run: |
+          echo git: $(git rev-parse --abbrev-ref HEAD)
+          echo github action: $GITHUB_REF
+
       - name: Download autotests binaries
         uses: robinraju/release-downloader@v1.2
         with:
