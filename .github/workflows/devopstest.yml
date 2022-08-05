@@ -31,7 +31,7 @@ jobs:
       - name: Download autotests binaries
         uses: robinraju/release-downloader@v1.2
         with:
-          repository: Yandex-Practicum/go-autotests-bin
+          repository: Yandex-Practicum/go-autotests
           latest: true
           fileName: "*"
           out-file-path: .tools
@@ -409,3 +409,8 @@ jobs:
             -file-storage-path=$TEMP_FILE \
             -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable' \
             -key="${TEMP_FILE}"
+
+      - name: "Code increment #14 (race detection)"
+        if: always()
+        run: |
+          go test -v -race ./...
