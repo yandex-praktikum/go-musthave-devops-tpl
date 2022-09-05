@@ -17,8 +17,16 @@ git remote add -m main template https://github.com/yandex-praktikum/go-musthave-
 
 Для обновления кода автотестов выполните команду:
 
+(Для Unix систем)
+
 ```
 git fetch template && git checkout template/main .github
+```
+
+(Для Windows PowerShell)
+
+```
+(git fetch template) -and (git checkout template/main .github)
 ```
 
 Затем добавьте полученные изменения в свой репозиторий.
