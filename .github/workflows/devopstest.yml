@@ -108,7 +108,7 @@ jobs:
       - name: Build server binary
         run: |
           cd cmd/server
-          go build -o server
+          go build -buildvcs=false -o server
 
 # II. Задание ко второму инкременту.
 # Разработать сервер по сбору рантайм метрик, который собирает репорты от агентов по протоколу http.
