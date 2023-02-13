@@ -100,7 +100,32 @@ jobs:
 # Агент должен штатно завершаться по сигналам: syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT
 
       - name: "Code increment #1"
-        if: always()
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.head_ref == 'iter1' ||
+          github.head_ref == 'iter2' ||
+          github.head_ref == 'iter3' ||
+          github.head_ref == 'iter4' ||
+          github.head_ref == 'iter5' ||
+          github.head_ref == 'iter6' ||
+          github.head_ref == 'iter7' ||
+          github.head_ref == 'iter8' ||
+          github.head_ref == 'iter9' ||
+          github.head_ref == 'iter10' ||
+          github.head_ref == 'iter11' ||
+          github.head_ref == 'iter12' ||
+          github.head_ref == 'iter13' ||
+          github.head_ref == 'iter14' ||
+          github.head_ref == 'iter15' ||
+          github.head_ref == 'iter16' ||
+          github.head_ref == 'iter17' ||
+          github.head_ref == 'iter18' ||
+          github.head_ref == 'iter19' ||
+          github.head_ref == 'iter20' ||
+          github.head_ref == 'iter21' ||
+          github.head_ref == 'iter22' ||
+          github.head_ref == 'iter23' ||
+          github.head_ref == 'iter24'
         run: |
           devopstest -test.v -test.run=^TestIteration1$ \
             -agent-binary-path=cmd/agent/agent
@@ -125,7 +150,31 @@ jobs:
 # Покройте код агента и сервера юнит тестами
 
       - name: "Code increment #2"
-        if: always()
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.head_ref == 'iter2' ||
+          github.head_ref == 'iter3' ||
+          github.head_ref == 'iter4' ||
+          github.head_ref == 'iter5' ||
+          github.head_ref == 'iter6' ||
+          github.head_ref == 'iter7' ||
+          github.head_ref == 'iter8' ||
+          github.head_ref == 'iter9' ||
+          github.head_ref == 'iter10' ||
+          github.head_ref == 'iter11' ||
+          github.head_ref == 'iter12' ||
+          github.head_ref == 'iter13' ||
+          github.head_ref == 'iter14' ||
+          github.head_ref == 'iter15' ||
+          github.head_ref == 'iter16' ||
+          github.head_ref == 'iter17' ||
+          github.head_ref == 'iter18' ||
+          github.head_ref == 'iter19' ||
+          github.head_ref == 'iter20' ||
+          github.head_ref == 'iter21' ||
+          github.head_ref == 'iter22' ||
+          github.head_ref == 'iter23' ||
+          github.head_ref == 'iter24'
         run: |
           devopstest -test.v -test.run=^TestIteration2[b]*$ \
             -source-path=. \
@@ -138,7 +187,30 @@ jobs:
 # По запросу GET http://<АДРЕС_СЕРВЕРА>/ сервер должен отдавать html-страничку, со списком имен и значений всех известных ему на текущий момент метрик.
 
       - name: "Code increment #3"
-        if: always()
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.head_ref == 'iter3' ||
+          github.head_ref == 'iter4' ||
+          github.head_ref == 'iter5' ||
+          github.head_ref == 'iter6' ||
+          github.head_ref == 'iter7' ||
+          github.head_ref == 'iter8' ||
+          github.head_ref == 'iter9' ||
+          github.head_ref == 'iter10' ||
+          github.head_ref == 'iter11' ||
+          github.head_ref == 'iter12' ||
+          github.head_ref == 'iter13' ||
+          github.head_ref == 'iter14' ||
+          github.head_ref == 'iter15' ||
+          github.head_ref == 'iter16' ||
+          github.head_ref == 'iter17' ||
+          github.head_ref == 'iter18' ||
+          github.head_ref == 'iter19' ||
+          github.head_ref == 'iter20' ||
+          github.head_ref == 'iter21' ||
+          github.head_ref == 'iter22' ||
+          github.head_ref == 'iter23' ||
+          github.head_ref == 'iter24'
         run: |
           devopstest -test.v -test.run=^TestIteration3[b]*$ \
             -source-path=. \
@@ -163,7 +235,29 @@ jobs:
 # Тесты проверяют, что агент экспортирует и обновляет метрики на сервере, описанные в первом инкременте.
 
       - name: "Code increment #4"
-        if: always()
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.head_ref == 'iter4' ||
+          github.head_ref == 'iter5' ||
+          github.head_ref == 'iter6' ||
+          github.head_ref == 'iter7' ||
+          github.head_ref == 'iter8' ||
+          github.head_ref == 'iter9' ||
+          github.head_ref == 'iter10' ||
+          github.head_ref == 'iter11' ||
+          github.head_ref == 'iter12' ||
+          github.head_ref == 'iter13' ||
+          github.head_ref == 'iter14' ||
+          github.head_ref == 'iter15' ||
+          github.head_ref == 'iter16' ||
+          github.head_ref == 'iter17' ||
+          github.head_ref == 'iter18' ||
+          github.head_ref == 'iter19' ||
+          github.head_ref == 'iter20' ||
+          github.head_ref == 'iter21' ||
+          github.head_ref == 'iter22' ||
+          github.head_ref == 'iter23' ||
+          github.head_ref == 'iter24'
         run: |
           devopstest -test.v -test.run=^TestIteration4$ \
             -source-path=. \
@@ -180,7 +274,28 @@ jobs:
 #   ADDRESS (по умолчанию: "127.0.0.1:8080" или "localhost:8080")
 
       - name: "Code increment #5"
-        if: always()
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.head_ref == 'iter5' ||
+          github.head_ref == 'iter6' ||
+          github.head_ref == 'iter7' ||
+          github.head_ref == 'iter8' ||
+          github.head_ref == 'iter9' ||
+          github.head_ref == 'iter10' ||
+          github.head_ref == 'iter11' ||
+          github.head_ref == 'iter12' ||
+          github.head_ref == 'iter13' ||
+          github.head_ref == 'iter14' ||
+          github.head_ref == 'iter15' ||
+          github.head_ref == 'iter16' ||
+          github.head_ref == 'iter17' ||
+          github.head_ref == 'iter18' ||
+          github.head_ref == 'iter19' ||
+          github.head_ref == 'iter20' ||
+          github.head_ref == 'iter21' ||
+          github.head_ref == 'iter22' ||
+          github.head_ref == 'iter23' ||
+          github.head_ref == 'iter24'
         run: |
           SERVER_PORT=$(random unused-port)
           ADDRESS="localhost:${SERVER_PORT}"
@@ -200,7 +315,27 @@ jobs:
 #   RESTORE по умолчанию (true) - булево значение (true|false), определяющее загружать или нет начальные значения из указанного файла при старте сервера.
 
       - name: "Code increment #6"
-        if: always()
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.head_ref == 'iter6' ||
+          github.head_ref == 'iter7' ||
+          github.head_ref == 'iter8' ||
+          github.head_ref == 'iter9' ||
+          github.head_ref == 'iter10' ||
+          github.head_ref == 'iter11' ||
+          github.head_ref == 'iter12' ||
+          github.head_ref == 'iter13' ||
+          github.head_ref == 'iter14' ||
+          github.head_ref == 'iter15' ||
+          github.head_ref == 'iter16' ||
+          github.head_ref == 'iter17' ||
+          github.head_ref == 'iter18' ||
+          github.head_ref == 'iter19' ||
+          github.head_ref == 'iter20' ||
+          github.head_ref == 'iter21' ||
+          github.head_ref == 'iter22' ||
+          github.head_ref == 'iter23' ||
+          github.head_ref == 'iter24'
         run: |
           SERVER_PORT=$(random unused-port)
           ADDRESS="localhost:${SERVER_PORT}"
@@ -227,7 +362,26 @@ jobs:
 # Во всех случаях иметь значения по умолчанию и реализовать приоритет значений полученных через ENV, перед значениями задаваемые посредством флагов.
 
       - name: "Code increment #7"
-        if: always()
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.head_ref == 'iter7' ||
+          github.head_ref == 'iter8' ||
+          github.head_ref == 'iter9' ||
+          github.head_ref == 'iter10' ||
+          github.head_ref == 'iter11' ||
+          github.head_ref == 'iter12' ||
+          github.head_ref == 'iter13' ||
+          github.head_ref == 'iter14' ||
+          github.head_ref == 'iter15' ||
+          github.head_ref == 'iter16' ||
+          github.head_ref == 'iter17' ||
+          github.head_ref == 'iter18' ||
+          github.head_ref == 'iter19' ||
+          github.head_ref == 'iter20' ||
+          github.head_ref == 'iter21' ||
+          github.head_ref == 'iter22' ||
+          github.head_ref == 'iter23' ||
+          github.head_ref == 'iter24'
         run: |
           SERVER_PORT=$(random unused-port)
           ADDRESS="localhost:${SERVER_PORT}"
@@ -245,7 +399,25 @@ jobs:
 # для контента с типом: application/json и text/html
 
       - name: "Code increment #8"
-        if: always()
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.head_ref == 'iter8' ||
+          github.head_ref == 'iter9' ||
+          github.head_ref == 'iter10' ||
+          github.head_ref == 'iter11' ||
+          github.head_ref == 'iter12' ||
+          github.head_ref == 'iter13' ||
+          github.head_ref == 'iter14' ||
+          github.head_ref == 'iter15' ||
+          github.head_ref == 'iter16' ||
+          github.head_ref == 'iter17' ||
+          github.head_ref == 'iter18' ||
+          github.head_ref == 'iter19' ||
+          github.head_ref == 'iter20' ||
+          github.head_ref == 'iter21' ||
+          github.head_ref == 'iter22' ||
+          github.head_ref == 'iter23' ||
+          github.head_ref == 'iter24'
         run: |
           SERVER_PORT=$(random unused-port)
           ADDRESS="localhost:${SERVER_PORT}"
@@ -291,7 +463,24 @@ jobs:
 #     вычислять хеш и передавать его в соответствующем поле hash ответа.
 
       - name: "Code increment #9"
-        if: always()
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.head_ref == 'iter9' ||
+          github.head_ref == 'iter10' ||
+          github.head_ref == 'iter11' ||
+          github.head_ref == 'iter12' ||
+          github.head_ref == 'iter13' ||
+          github.head_ref == 'iter14' ||
+          github.head_ref == 'iter15' ||
+          github.head_ref == 'iter16' ||
+          github.head_ref == 'iter17' ||
+          github.head_ref == 'iter18' ||
+          github.head_ref == 'iter19' ||
+          github.head_ref == 'iter20' ||
+          github.head_ref == 'iter21' ||
+          github.head_ref == 'iter22' ||
+          github.head_ref == 'iter23' ||
+          github.head_ref == 'iter24'
         run: |
           SERVER_PORT=$(random unused-port)
           ADDRESS="localhost:${SERVER_PORT}"
@@ -314,7 +503,23 @@ jobs:
 #   Использование этого параметра имеет приоритет над параметром -file-storage-path и автоматически задействует функциональность сервера БД
 # NOTE: Для хранения значений gauge рекомендуется использовать тип: double precision
       - name: "Code increment #10"
-        if: always()
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.head_ref == 'iter10' ||
+          github.head_ref == 'iter11' ||
+          github.head_ref == 'iter12' ||
+          github.head_ref == 'iter13' ||
+          github.head_ref == 'iter14' ||
+          github.head_ref == 'iter15' ||
+          github.head_ref == 'iter16' ||
+          github.head_ref == 'iter17' ||
+          github.head_ref == 'iter18' ||
+          github.head_ref == 'iter19' ||
+          github.head_ref == 'iter20' ||
+          github.head_ref == 'iter21' ||
+          github.head_ref == 'iter22' ||
+          github.head_ref == 'iter23' ||
+          github.head_ref == 'iter24'
         run: |
           SERVER_PORT=$(random unused-port)
           ADDRESS="localhost:${SERVER_PORT}"
@@ -334,7 +539,22 @@ jobs:
 #   схема и формат хранения остаются на ваше усмотрение.
 
       - name: "Code increment #11"
-        if: always()
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.head_ref == 'iter11' ||
+          github.head_ref == 'iter12' ||
+          github.head_ref == 'iter13' ||
+          github.head_ref == 'iter14' ||
+          github.head_ref == 'iter15' ||
+          github.head_ref == 'iter16' ||
+          github.head_ref == 'iter17' ||
+          github.head_ref == 'iter18' ||
+          github.head_ref == 'iter19' ||
+          github.head_ref == 'iter20' ||
+          github.head_ref == 'iter21' ||
+          github.head_ref == 'iter22' ||
+          github.head_ref == 'iter23' ||
+          github.head_ref == 'iter24'
         run: |
           SERVER_PORT=$(random unused-port)
           ADDRESS="localhost:${SERVER_PORT}"
@@ -359,7 +579,21 @@ jobs:
 # * Изменение в базе можно выполнять в рамках одной транзакции/одного запроса
 
       - name: "Code increment #12"
-        if: always()
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.head_ref == 'iter12' ||
+          github.head_ref == 'iter13' ||
+          github.head_ref == 'iter14' ||
+          github.head_ref == 'iter15' ||
+          github.head_ref == 'iter16' ||
+          github.head_ref == 'iter17' ||
+          github.head_ref == 'iter18' ||
+          github.head_ref == 'iter19' ||
+          github.head_ref == 'iter20' ||
+          github.head_ref == 'iter21' ||
+          github.head_ref == 'iter22' ||
+          github.head_ref == 'iter23' ||
+          github.head_ref == 'iter24'
         run: |
           SERVER_PORT=$(random unused-port)
           ADDRESS="localhost:${SERVER_PORT}"
@@ -380,7 +614,20 @@ jobs:
 # * Не используйте функции fmt.Print* для вывода отладочной информации в коде сервера и агента
 
       - name: "Code increment #13"
-        if: always()
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.head_ref == 'iter13' ||
+          github.head_ref == 'iter14' ||
+          github.head_ref == 'iter15' ||
+          github.head_ref == 'iter16' ||
+          github.head_ref == 'iter17' ||
+          github.head_ref == 'iter18' ||
+          github.head_ref == 'iter19' ||
+          github.head_ref == 'iter20' ||
+          github.head_ref == 'iter21' ||
+          github.head_ref == 'iter22' ||
+          github.head_ref == 'iter23' ||
+          github.head_ref == 'iter24'
         run: |
           devopstest -test.v -test.run=^TestIteration13$ \
             -source-path=.
@@ -396,7 +643,19 @@ jobs:
 #   * Имя метрики: "CPUutilization1", тип: gauge - загрузка ядра в процентах за 10 секунд (точное количество - по числу CPU определяемое во время исполнения)
 
       - name: "Code increment #14"
-        if: always()
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.head_ref == 'iter14' ||
+          github.head_ref == 'iter15' ||
+          github.head_ref == 'iter16' ||
+          github.head_ref == 'iter17' ||
+          github.head_ref == 'iter18' ||
+          github.head_ref == 'iter19' ||
+          github.head_ref == 'iter20' ||
+          github.head_ref == 'iter21' ||
+          github.head_ref == 'iter22' ||
+          github.head_ref == 'iter23' ||
+          github.head_ref == 'iter24'
         run: |
           SERVER_PORT=$(random unused-port)
           ADDRESS="localhost:${SERVER_PORT}"
