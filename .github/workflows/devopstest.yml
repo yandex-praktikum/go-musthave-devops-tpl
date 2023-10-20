@@ -10,7 +10,7 @@ jobs:
 
   devopstest:
     runs-on: ubuntu-latest
-    container: golang:1.19
+    container: golang:1.21
 
     services:
       postgres:
@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download autotests binaries
-        uses: robinraju/release-downloader@v1.2
+        uses: robinraju/release-downloader@v1.8
         with:
           repository: Yandex-Practicum/go-autotests
           latest: true
